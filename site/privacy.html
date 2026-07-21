@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — Between Mirror</title>
+<meta name="description" content="What the project collects (nothing) versus what a web host inevitably sees, where your archive goes (nowhere), and the three disclosed paths any text can take.">
+<link rel="canonical" href="https://between-mirror.github.io/between/privacy.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Between Mirror">
+<meta property="og:url" content="https://between-mirror.github.io/between/privacy.html">
+<meta property="og:title" content="Privacy — Between Mirror">
+<meta property="og:description" content="What the project collects (nothing) versus what a web host inevitably sees, where your archive goes (nowhere), and the three disclosed paths any text can take.">
+<meta property="og:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<meta property="og:image:width" content="1440">
+<meta property="og:image:height" content="900">
+<meta property="og:image:alt" content="Between Mirror showing a warmth-and-tension river across two years of a fictional couple's messages, with a report card of counted statistics beneath it.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Privacy — Between Mirror">
+<meta name="twitter:description" content="What the project collects (nothing) versus what a web host inevitably sees, where your archive goes (nowhere), and the three disclosed paths any text can take.">
+<meta name="twitter:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<!-- A page about not leaking should not leak the page you came from. -->
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EFECE4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11151D">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="mark" href="./">Between Mirror</a>
+    <nav class="site" aria-label="Site">
+      <a href="./">Home</a>
+      <a href="demo.html">Demo</a>
+      <a href="download.html">Get it</a>
+      <a href="privacy.html" aria-current="page">Privacy</a>
+      <a href="security.html">Security</a>
+      <a href="method.html">Method</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1>Privacy</h1>
+    <p class="lede">
+      There is no privacy policy in the usual sense, because there is no service. The project collects
+      nothing, because there is nowhere for it to go — and the two places that is not the whole story,
+      the host of this website and the update check the installer will one day carry, are spelled out
+      below rather than left out.
+    </p>
+  </section>
+
+  <section class="wrap prose">
+    <h2>What is collected</h2>
+    <p>
+      The project collects nothing. That is worth separating from what the <em>host</em> sees, because
+      the two get blurred constantly and the blur always favours the person making the claim: this
+      website is served by GitHub Pages, and GitHub receives the ordinary request metadata any web
+      server receives — your IP address, which page you asked for, your browser's user-agent string.
+      Between Mirror sets no cookies, ships no analytics, and loads no scripts, from here or anywhere.
+      But a page cannot honestly tell you that nobody saw you ask for it.
+    </p>
+    <p>What the application collects, to be specific, because "nothing" is a word every company uses:</p>
+    <ul>
+      <li>No accounts, no sign-up, no email address, no identity.</li>
+      <li>No analytics, no usage statistics, no crash reporting, no session replay.</li>
+      <li>No licence check, no activation, no hardware fingerprint.</li>
+      <li>Nothing about you, your archive, or how you use the program — not in aggregate, not anonymised, not ever.</li>
+    </ul>
+    <p>
+      This is not an opt-out. There is no code that does these things, no dependency that could, and a
+      test in the build that fails if one is added.
+    </p>
+
+    <h2>The one request the application will make on its own</h2>
+    <div class="note">
+      <p>
+        <strong>Today it makes none.</strong> Today the source build makes no off-device request unless
+        you explicitly choose an external model path. In local-only mode, analysis requests go only to
+        the model running on your own machine. The signed installer that would carry an updater does
+        not exist yet. What follows is the policy it will ship under, published now so it is a
+        commitment made in the open rather than a decision taken later under pressure.
+      </p>
+    </div>
+    <p>
+      Checking whether a security update exists <em>will</em> be on by default, because a tool holding
+      years of someone's messages should not sit quietly on a known vulnerability just to keep a
+      slogan tidy — and there will be a one-click switch to turn it off.
+    </p>
+    <p>
+      It will carry no identifier: one static release-manifest file, the same file for everybody, with
+      no install ID, no machine ID, no version history, no counter, and nothing about your archive.
+      Whoever serves that file learns what any file host learns — that some computer asked for a
+      public file. That is the whole of it.
+    </p>
+    <p>
+      <strong>Telemetry remains permanently absent</strong>, and an update check is not telemetry: one
+      is the program asking a question, the other is the program reporting on you. If that distinction
+      ever stops holding here, it is a broken promise and should be called one.
+    </p>
+
+    <h2>Where your archive lives</h2>
+    <p>
+      In one SQLite file on your computer, next to the application. The server binds to loopback only
+      and <strong>refuses to start</strong> otherwise. There is no application code that collects or
+      reports telemetry, no dependency included for analytics or monitoring, and the build fails if a
+      known telemetry dependency or collection path is introduced.
+    </p>
+    <p>
+      The application also has a <em>Your data</em> panel that tells you the database's exact path and
+      size, what you imported it from, and where exports go — with buttons to check it is intact, copy
+      it somewhere safe, and delete all of it. Leaving has to be one of the things you can do, or "your
+      data stays with you" is only half a promise.
+    </p>
+
+    <h2>The three paths any text can take</h2>
+    <p>
+      The counting — river, episodes, eras, patterns, exports — never leaves your machine. Only the
+      <em>written readings</em> need a language model, and there are exactly three ways to run one.
+      You choose, in Settings, and the default is the first:
+    </p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Mode</th><th>What leaves</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Local-only</strong> (default)</td><td>Nothing. A model on your own machine.</td><td>Free</td></tr>
+        <tr><td><strong>Claude subscription</strong></td><td>The message text of the stretches being read, to Anthropic, when you run a reading.</td><td>Your existing plan</td></tr>
+        <tr><td><strong>Your API key</strong></td><td>The same, to the Anthropic API.</td><td>Billed to you; estimate shown first</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>
+      The mode is enforced on the server, not in the interface: a local-only owner cannot accidentally
+      spend money or send text, whatever the client asks for.
+    </p>
+
+    <h2>Things we will never build</h2>
+    <p>
+      Permanent, and written down in the repository's roadmap so that a future version breaking one is
+      visible as a broken promise rather than a product decision: no hosted service, no accounts, no
+      telemetry, no DRM or licence servers, no per-reading fees, no "premium insight", no
+      evidence-grade or court-ready claims, no selling or training on anyone's messages, no social
+      features, no always-on agent watching new messages arrive.
+    </p>
+
+    <h2>What this does not protect you from</h2>
+    <p>
+      Local-first is not the same as safe. Anyone with your unlocked computer has your archive; a
+      cloud-synced folder will copy it off the machine (the app warns at boot if it looks like one);
+      the database is not encrypted at rest, deliberately, because a forgotten passphrase on a tool
+      with no accounts means losing something irreplaceable. All of it is written out in the
+      <a href="security.html">threat model</a> rather than left for you to discover.
+    </p>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Between Mirror — free software under the AGPL. No telemetry, ever.</span>
+    <span>
+      <a href="https://github.com/between-mirror/between">Source</a> ·
+      <a href="security.html">Security</a> ·
+      <a href="https://github.com/between-mirror/between/blob/main/SUPPORT.md">Support</a> ·
+      <a href="pricing.html#sponsor">Sponsor maintenance</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>

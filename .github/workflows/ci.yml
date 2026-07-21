@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# The mock engine is test-only; the harness opts in explicitly (production never sets this).
+# vitest.config.ts also sets it, but exporting it here keeps any direct CLI test honest too.
+env:
+  BETWEEN_ALLOW_MOCK: '1'
+
+jobs:
+  test:
+    name: typecheck + tests (${{ matrix.os }}, node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Never let one cell's failure hide another's result — that is how a platform quietly stops
+      # being tested.
+      fail-fast: false
+      matrix:
+        # Both platforms, at the supported floor and at the version development actually happens on.
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # Windows is the primary development platform, so it is tested here rather than explained away.
+      # The story the old workflow told — "no win32 prebuild for the pinned Node, and building needs an
+      # MSVC toolchain the runner doesn't cleanly expose" — was half right, and the half it got wrong is
+      # why this matrix exists. better-sqlite3 12.11.1 publishes win32-x64 prebuilds for Node ABIs
+      # 127/137/141/147 (Node 22/24/25/26) but NOT for Node 20 (ABI 115). On Node 20 the install falls
+      # through to `node-gyp rebuild`, and node-gyp 10 genuinely cannot detect the runner's Visual
+      # Studio 18 — so Node 20 on Windows fails, exactly as claimed. The fix is not to skip the
+      # platform: it is that Node 20 (EOL April 2026) was never actually a supported floor on Windows.
+      # The floor is now 22, where the prebuild exists and `npm ci` needs no compiler at all.
+      # Caching the installed tree (which carries that binary) keeps the install off the critical path.
+      - name: Cache node_modules (carries the native better-sqlite3 binary)
+        id: modules
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
+        with:
+          path: |
+            node_modules
+            server/node_modules
+            web/node_modules
+          # The Node version MUST be in this key. A native addon is compiled against one ABI, so a tree
+          # cached under a different Node restores a binary this job cannot load. That is exactly what
+          # happened in v0.2.3 (a hardcoded "node20" in the key), and the verify step below is what
+          # caught it.
+          key: ${{ runner.os }}-node${{ matrix.node }}-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install
+        if: steps.modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      # Prove the native addon actually loaded before blaming the test suite for a toolchain problem.
+      - name: Verify the native addon loads
+        run: node -e "const D=require('better-sqlite3'); const d=new D(':memory:'); d.exec('create table t(x)'); d.prepare('insert into t values (1)').run(); console.log('better-sqlite3 OK:', d.prepare('select count(*) c from t').get().c);"
+
+      - run: npm run typecheck
+      - run: npm test

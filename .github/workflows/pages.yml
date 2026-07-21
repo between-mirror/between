@@ -1,0 +1,119 @@
+name: Deploy site
+
+# The landing site is plain static files in site/ — no build step, no bundler, no dependencies.
+# That is deliberate: a page arguing that this software does not phone third parties should not need
+# a toolchain to render, and "what is in the repo" should be exactly "what a visitor gets".
+#
+# Requires Settings → Pages → Source = "GitHub Actions" once, by hand.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# The mock engine is test-only; the suite opts in explicitly, exactly as ci.yml does.
+env:
+  BETWEEN_ALLOW_MOCK: '1'
+
+# One deploy at a time; never cancel one in flight, so a half-published site cannot happen.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      # The same assertion the test suite makes, run again here against exactly the bytes about to be
+      # published. The suite proves it about the working tree; this proves it about the artifact.
+      - name: Refuse to publish a page that fetches from another origin
+        run: |
+          # -o, not -n: match by URL, not by line. Filtering whole LINES meant one allowed href
+          # anywhere on a line erased every other URL on it — and the site's footers put a permitted
+          # github.com link on the same line as other markup, so an <img src="https://tracker/..."
+          # beside it passed this guard clean. Single quotes are matched too; only double quotes were.
+          #
+          # between-mirror.github.io is the site's own canonical origin: <link rel="canonical"> and the
+          # OG/Twitter card URLs name it so crawlers and link previews resolve correctly. Naming
+          # yourself is not an off-origin fetch — a canonical link causes no request at all. This
+          # allow-list is duplicated in server/test/siteNoEgress.test.ts; keep them in step.
+          if grep -rIoE '(src|srcset|poster|href|content)[[:space:]]*=[[:space:]]*.?(https?:)?//[^"'"'"' >]*' site/ \
+             | grep -vE '(https://(between-mirror\.github\.io/between/|github\.com/between-mirror/|nodejs\.org|www\.contributor-covenant\.org|988lifeline\.org|findahelpline\.com))'; then
+            echo "::error::an off-origin asset or an unapproved outbound link is present in site/"
+            exit 1
+          fi
+          # The MARKETING pages ship no scripts. The browser demo under site/demo is the application
+          # itself and is necessarily a bundle, so it is excluded here and held to its own rule after
+          # it is built (see the demo egress check below). At this point in the job site/demo does not
+          # exist yet — it is built further down — so this is only ever checking hand-written pages.
+          if grep -rIn --exclude-dir=demo --exclude-dir=demo-data '<script' site/; then
+            echo "::error::the marketing pages ship no scripts, by design"
+            exit 1
+          fi
+          echo "site/ is self-contained."
+
+      # The site's claims are asserted by the test suite — that the pages fetch nothing off-origin,
+      # ship no scripts, and do not overclaim. Deploying without running it would mean the page
+      # arguing "there is a test in the build that proves this" could go out from a tree where that
+      # test was failing. The grep above checks the bytes; this checks the argument.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+      # Build the browser demo INTO site/demo. It is a build artifact and is deliberately not
+      # committed, so this is the only place it comes into existence for the deploy. demo:build
+      # regenerates the fictional database, re-captures every read surface from the real API, builds
+      # the app against them, and asserts the page and its data line up.
+      - name: Build the browser demo
+        run: npm run demo:build
+        env:
+          BETWEEN_ALLOW_MOCK: '1'
+
+      # The demo's own promise, checked against the bytes about to be published rather than the ones
+      # in the working tree. The suite already asserted this, but the suite ran before the bundle
+      # existed on this runner.
+      - name: Refuse to publish a demo that reaches another origin
+        run: |
+          # Every absolute URL in the built demo must be one of the two reviewed non-fetching cases:
+          # W3C namespace identifiers, which the DOM spec requires verbatim and which are never
+          # requested, and React's error-decoder link, which is text inside an error message. Anything
+          # else means the demo would talk to someone.
+          if grep -rIoE '(https?:)?//[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[^"'"'"' >]*' site/demo/ \
+             | grep -vE '(http://www\.w3\.org/|https://reactjs\.org/docs/error-decoder\.html)'; then
+            echo "::error::the built demo references an origin nobody approved"
+            exit 1
+          fi
+          test -f site/demo/index.html || { echo "::error::site/demo/index.html missing — /demo/ would 404"; exit 1; }
+          test -f site/demo-data/manifest.json || { echo "::error::site/demo-data/manifest.json missing"; exit 1; }
+          echo "the demo is self-contained."
+
+      # Re-run the site suite now that site/demo exists: three assertions skip when the bundle is
+      # absent, which is every run before this point, so this is where they actually bite.
+      - name: Re-check the site suite against the built demo
+        run: npx vitest run --root server test/siteNoEgress.test.ts
+        env:
+          BETWEEN_ALLOW_MOCK: '1'
+
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v5
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e  # v4

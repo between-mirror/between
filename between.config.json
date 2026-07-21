@@ -1,0 +1,16 @@
+{
+  "$comment": "Tracked, non-personal config only. All personalization (owner, region, contact types, merges) lives in the DB via onboarding — never here (Addendum B.1).",
+  "dbPath": "between.db",
+  "airlockDir": "airlock",
+  "dataDir": "data",
+  "api": { "port": 5274, "host": "127.0.0.1" },
+  "ingest": {
+    "sessionGapMinutes": 60,
+    "batchSize": 5000,
+    "nonEnglishSuppressThreshold": 0.35,
+    "coverageMinConfidence": 0.5
+  },
+  "defaultRegion": "US",
+  "ollama": { "model": "llama3.1", "url": "http://127.0.0.1:11434", "numCtx": 8192 },
+  "engines": { "local": "ollama", "claude": "claude", "render": "claude" }
+}

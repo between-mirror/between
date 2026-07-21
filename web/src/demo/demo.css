@@ -1,0 +1,49 @@
+/* Between Mirror — demo-only chrome. Never bundled into the installed application. */
+
+.demo-banner {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  background: var(--amber-dim, #6b4d19);
+  color: var(--paper, #f5f1e8);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.demo-banner strong { font-weight: 600; }
+
+.demo-broken {
+  max-width: 40rem;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 34rem) {
+  .demo-banner { font-size: 0.82rem; text-align: left; }
+}
+
+/* Ask, in the demo: the questions it holds answers for. */
+.ask-suggestions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+
+.ask-suggestion {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.ask-suggestion:hover { border-color: var(--amber, #b8863b); }
+
+.ask-suggestion-note {
+  flex-basis: 100%;
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ — Between Mirror</title>
+<meta name="description" content="Honest answers about what Between Mirror can read, what it refuses to do, and who should not use it.">
+<link rel="canonical" href="https://between-mirror.github.io/between/faq.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Between Mirror">
+<meta property="og:url" content="https://between-mirror.github.io/between/faq.html">
+<meta property="og:title" content="FAQ — Between Mirror">
+<meta property="og:description" content="Honest answers about what Between Mirror can read, what it refuses to do, and who should not use it.">
+<meta property="og:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<meta property="og:image:width" content="1440">
+<meta property="og:image:height" content="900">
+<meta property="og:image:alt" content="Between Mirror showing a warmth-and-tension river across two years of a fictional couple's messages, with a report card of counted statistics beneath it.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ — Between Mirror">
+<meta name="twitter:description" content="Honest answers about what Between Mirror can read, what it refuses to do, and who should not use it.">
+<meta name="twitter:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<!-- A page about not leaking should not leak the page you came from. -->
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EFECE4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11151D">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="mark" href="./">Between Mirror</a>
+    <nav class="site" aria-label="Site">
+      <a href="./">Home</a>
+      <a href="demo.html">Demo</a>
+      <a href="download.html">Get it</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="security.html">Security</a>
+      <a href="method.html">Method</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="faq.html" aria-current="page">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1>Questions</h1>
+    <p class="lede">Including the ones with uncomfortable answers.</p>
+  </section>
+
+  <section class="wrap prose">
+    <h3>Do my messages get uploaded?</h3>
+    <p>
+      The counting never leaves your machine. The written readings need a language model, and you choose
+      whether that is a local one (nothing leaves), your Claude subscription, or your own API key — with
+      the cost shown before anything runs. The default sends nothing. <a href="privacy.html">Details</a>.
+    </p>
+
+    <h3>Can I use it on my iPhone messages?</h3>
+    <p>
+      Not yet, and there is no way to fake it: the parser has no path for an iPhone backup, and iMessage
+      traffic is not in an Android SMS archive at all. If both of you used iPhones, the archive does not
+      exist. iMessage and WhatsApp are the next major version.
+    </p>
+
+    <h3>Will it tell me who was right?</h3>
+    <p>
+      No, and it is built specifically not to. It will show you what was said, when, how often, and by
+      whom — and where it offers an interpretation it offers an alternative one beside it. If you want a
+      verdict, this is the wrong tool, and that is a design decision rather than a missing feature.
+    </p>
+
+    <h3>Can I use it to prove something in court, or in an argument?</h3>
+    <p>
+      Please do not. Exports are deliberately neutral — the verbatim messages and a hash, with none of
+      the tool's readings attached. There is no "build a case" mode and there will not be one. A tool
+      that reads two people's private messages and then hands one of them ammunition is a different and
+      much worse product.
+    </p>
+
+    <h3>Does it detect abuse?</h3>
+    <p>
+      No. There is an experimental layer that describes coercive patterns in behavioural language, and
+      it is off by default, text-only, dependent on your own calibration, and <strong>not externally
+      validated</strong>. It will not be marketed as abuse detection before independent clinical review
+      — or after. If you are trying to work out whether you are safe, please talk to a person; there is
+      a list of confidential lines in the project's
+      <a href="https://github.com/between-mirror/between/blob/main/SUPPORT.md">support document</a>.
+    </p>
+
+    <h3>Who should not use this?</h3>
+    <p>
+      Anyone looking for evidence against a partner. Anyone who wants to be told they were right. Anyone
+      currently in crisis — this is a slow, quiet tool for reflection, and it is not a substitute for a
+      person. And anyone reading someone else's archive: it is built for the owner of the messages, and
+      nothing about it is designed for surveillance.
+    </p>
+
+    <h3>What happens to my data if the project stops?</h3>
+    <p>
+      Nothing. Your database is a plain SQLite file on your own disk, and the source is AGPL — it keeps
+      working with no server to shut down, no licence to expire, and no account to lose. That is what
+      local-first actually buys you.
+    </p>
+
+    <h3>Is it finished?</h3>
+    <p>
+      No. The deterministic instrument works end to end and is well tested. The interpretive layer is
+      experimental and gated. The installer does not exist yet.
+      <a href="https://github.com/between-mirror/between/blob/main/docs/STATUS.md">STATUS.md</a> is the
+      authoritative list, including the things that are currently broken or slow.
+    </p>
+
+    <h3>Why is it free if it took this long to build?</h3>
+    <p>
+      Because charging for the analysis would mean putting a price on someone's own history, and because
+      the cost to serve you is zero — there is no server. Money is only ever for convenience: an
+      installer for people who should not have to use a terminal. <a href="pricing.html">Pricing</a>.
+    </p>
+
+    <h3>Can I fork it and make my own version?</h3>
+    <p>
+      Yes. That is what the licence is for. Please just do not call it Between Mirror or imply it is the
+      official build — when software reads someone's private messages, being able to tell whose build
+      you are running is the one thing that matters.
+      <a href="https://github.com/between-mirror/between/blob/main/TRADEMARK.md">The terms</a>.
+    </p>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Between Mirror — free software under the AGPL. No telemetry, ever.</span>
+    <span>
+      <a href="https://github.com/between-mirror/between">Source</a> ·
+      <a href="security.html">Security</a> ·
+      <a href="https://github.com/between-mirror/between/blob/main/SUPPORT.md">Support</a> ·
+      <a href="pricing.html#sponsor">Sponsor maintenance</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>

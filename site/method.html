@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Method — Between Mirror</title>
+<meta name="description" content="How Between Mirror reaches an observation, what counts as evidence, and where it refuses to draw a conclusion.">
+<link rel="canonical" href="https://between-mirror.github.io/between/method.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Between Mirror">
+<meta property="og:url" content="https://between-mirror.github.io/between/method.html">
+<meta property="og:title" content="Method — Between Mirror">
+<meta property="og:description" content="How Between Mirror reaches an observation, what counts as evidence, and where it refuses to draw a conclusion.">
+<meta property="og:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<meta property="og:image:width" content="1440">
+<meta property="og:image:height" content="900">
+<meta property="og:image:alt" content="Between Mirror showing a warmth-and-tension river across two years of a fictional couple's messages, with a report card of counted statistics beneath it.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Method — Between Mirror">
+<meta name="twitter:description" content="How Between Mirror reaches an observation, what counts as evidence, and where it refuses to draw a conclusion.">
+<meta name="twitter:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<!-- A page about not leaking should not leak the page you came from. -->
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EFECE4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11151D">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="mark" href="./">Between Mirror</a>
+    <nav class="site" aria-label="Site">
+      <a href="./">Home</a>
+      <a href="demo.html">Demo</a>
+      <a href="download.html">Get it</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="security.html">Security</a>
+      <a href="method.html" aria-current="page">Method</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1>Method</h1>
+    <p class="lede">
+      What is counted, what is inferred, and where the line between them is drawn — because the second
+      kind of statement is only worth reading if you can tell it from the first.
+    </p>
+  </section>
+
+  <section class="wrap prose">
+    <h2>Two layers, deliberately separate</h2>
+    <p>
+      <strong>The deterministic layer</strong> is arithmetic over your messages: volume, timing, who
+      opened a conversation, reply latency, word and emoji frequencies, day and hour rhythms, bounded
+      episodes of tension, era segmentation. No model is involved. It is free, instant, offline, and it
+      is the same numbers every time.
+    </p>
+    <p>
+      <strong>The interpretive layer</strong> is a language model reading the actual text: emotional
+      texture per message, and prose readings composed from that. It costs time or money, it is opt-in,
+      and it is never the only thing on screen.
+    </p>
+
+    <h2>Receipts, mechanically</h2>
+    <p>
+      The model does not write prose. It returns typed <em>blocks</em>, and each block that makes a
+      claim must carry the ids of the messages it rests on. At render time every id is resolved against
+      the real database; a block whose evidence does not resolve is dropped rather than shown. The
+      application composes the final text from the survivors.
+    </p>
+    <p>
+      The sentences that connect paragraphs, and the question that closes a reading, assert nothing —
+      so they cannot carry receipts, and the model is not allowed to write them either. They come from
+      a small set of fixed, authored lines chosen by a hash of the reading's own content. The result is
+      that nothing in a reading is both unreceipted and meaningful.
+    </p>
+
+    <h2>Coverage is shown, and it gates the chart</h2>
+    <p>
+      An unscored message reads as neutral. So a thread the model has only partly read does not look
+      partly read — it looks calm, which is the most misleading thing this software could do. Below 95%
+      coverage the chart draws the deterministic layer instead, and says so under the chart. Above it,
+      it says that too. Stretches the model declined are named as declined, not left as gaps.
+    </p>
+
+    <h2>Calibration, and why it asks you to be harsh</h2>
+    <p>
+      Before a directional reading means much, the tool is tuned to your judgement: you label a blind
+      sample of your own thread, both sides, without seeing what the model thought. It then measures
+      whether you were gentler on your own hard messages than on the other person's — the common human
+      tilt — and holds the frame more neutral when you were.
+    </p>
+    <p>
+      Until that is done, directional readings say plainly that they are provisional.
+    </p>
+
+    <h2>Where it refuses</h2>
+    <ul>
+      <li><strong>Below the evidence floor</strong>, it declines rather than stretching thin evidence into a full reading.</li>
+      <li><strong>Asked something the archive cannot support</strong>, it says so instead of answering.</li>
+      <li><strong>No diagnosis, ever.</strong> No clinical nouns applied to a person. Behaviour is described in the words that were used.</li>
+      <li><strong>No prediction, no prescription, no verdict.</strong> Interpretations are offered with an alternative reading beside them, because two things are usually true at once.</li>
+      <li><strong>The abuse-pattern layer is experimental, off by default, and not externally validated.</strong> It will not be marketed as detecting abuse before independent clinical review, or after.</li>
+    </ul>
+
+    <h2>The limit worth stating twice</h2>
+    <div class="note">
+      <p>
+        Texts carry less than half of any conversation. What happened in the room, on the phone, and in
+        the silence is not in the archive — and a tool that reads only the text will systematically
+        miss whoever did their repairing in person. Every reading says so on its face.
+      </p>
+    </div>
+    <p class="small">
+      Full document:
+      <a href="https://github.com/between-mirror/between/blob/main/docs/METHOD.md">METHOD.md</a> ·
+      the register the prose is written in:
+      <a href="https://github.com/between-mirror/between/blob/main/docs/VOICE.md">VOICE.md</a>
+    </p>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Between Mirror — free software under the AGPL. No telemetry, ever.</span>
+    <span>
+      <a href="https://github.com/between-mirror/between">Source</a> ·
+      <a href="security.html">Security</a> ·
+      <a href="https://github.com/between-mirror/between/blob/main/SUPPORT.md">Support</a> ·
+      <a href="pricing.html#sponsor">Sponsor maintenance</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>

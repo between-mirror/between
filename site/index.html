@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Between Mirror — read your own archive honestly</title>
+<meta name="description" content="Between Mirror turns years of messages into a private, explorable relationship history — with the words underneath every observation. Local-first, open source, no telemetry.">
+<link rel="canonical" href="https://between-mirror.github.io/between/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Between Mirror">
+<meta property="og:url" content="https://between-mirror.github.io/between/">
+<meta property="og:title" content="Between Mirror — read your own archive honestly">
+<meta property="og:description" content="Between Mirror turns years of messages into a private, explorable relationship history — with the words underneath every observation. Local-first, open source, no telemetry.">
+<meta property="og:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<meta property="og:image:width" content="1440">
+<meta property="og:image:height" content="900">
+<meta property="og:image:alt" content="Between Mirror showing a warmth-and-tension river across two years of a fictional couple's messages, with a report card of counted statistics beneath it.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Between Mirror — read your own archive honestly">
+<meta name="twitter:description" content="Between Mirror turns years of messages into a private, explorable relationship history — with the words underneath every observation. Local-first, open source, no telemetry.">
+<meta name="twitter:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<!-- A page about not leaking should not leak the page you came from. -->
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EFECE4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11151D">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="mark" href="./">Between Mirror</a>
+    <nav class="site" aria-label="Site">
+      <a href="./" aria-current="page">Home</a>
+      <a href="demo.html">Demo</a>
+      <a href="download.html">Get it</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="security.html">Security</a>
+      <a href="method.html">Method</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1>Between Mirror turns years of messages into a private, explorable relationship history — with the words underneath every observation.</h1>
+    <p class="lede">
+      Point it at an archive of your own SMS/MMS and it becomes something you can walk through: how the
+      temperature moved across the years, which stretches were hard, what the two of you actually said.
+      Your archive stays on your computer. Deterministic views never send message text anywhere;
+      optional written readings use only the model path you explicitly choose.
+    </p>
+    <div class="actions">
+      <a class="btn btn--primary" href="demo/">Try the fictional demo</a>
+      <a class="btn" href="demo.html">See what it looks like</a>
+      <a class="btn" href="download.html">Get it</a>
+      <a class="btn" href="https://github.com/between-mirror/between">Read the source</a>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <figure>
+      <img src="media/hero-river.png" width="1440" height="900" loading="eager"
+           alt="Between Mirror showing a 26-month thread: a warmth-and-tension river across two years, with a report card of counted statistics beneath it.">
+      <figcaption>A fictional couple, Alex &amp; Jordan. Every image on this site is the real application reading the demo archive — never a mockup, and never anyone's real messages.</figcaption>
+    </figure>
+  </section>
+
+  <section class="wrap prose">
+    <h2>What you'd see</h2>
+    <p>
+      <strong>The years, as weather.</strong> Warmth above the line, tension below, thickness for how
+      much was said. It reads left to right, like a life does.
+    </p>
+    <p>
+      <strong>Seasons, named.</strong> The arc broken into eras — each a stretch of months with its own
+      temperature and its own rhythm of rupture and repair.
+    </p>
+    <p>
+      <strong>The hard stretches, listed.</strong> When, who carried the heat, how severe it got, and
+      whether anyone circled back. Every row opens the actual messages.
+    </p>
+  </section>
+
+  <section class="wrap">
+    <figure>
+      <img src="media/eras.png" width="1440" height="900" loading="lazy"
+           alt="The Eras view: named seasons such as “New love” and “The friction of close quarters”, each with its date span and counted statistics.">
+      <figcaption>Seasons are named, never graded.</figcaption>
+    </figure>
+  </section>
+
+  <section class="wrap prose">
+    <h2>Every claim shows its receipts</h2>
+    <p>
+      This is the part that matters. A model that writes beautifully about your marriage without showing
+      you what it read is not an instrument — it's a horoscope.
+    </p>
+  </section>
+
+  <section class="wrap">
+    <figure>
+      <img src="media/receipt.png" width="1440" height="900" loading="lazy"
+           alt="A reading with one claim opened to reveal the exact message it rests on, under a header reading “The words underneath”, with a “That's not right” link beside it.">
+      <figcaption>Open any observation and the words are right there — with <em>“That's not right”</em> beside them, because you were there and the model wasn't.</figcaption>
+    </figure>
+  </section>
+
+
+  <section class="wrap">
+    <figure>
+      <img src="media/ask-answered.png" width="1440" height="900" loading="lazy"
+           alt="The Ask view answering the query 'sorry' with 22 matching messages, each shown with its date and who sent it.">
+      <figcaption>Ask a question; the archive answers with its own words, or says it cannot.</figcaption>
+    </figure>
+  </section>
+
+  <section class="wrap prose">
+    <p>
+      So the rule is mechanical, not editorial: the model may only emit claims that carry evidence ids,
+      each id must resolve to a real message or the claim is dropped, and even the connective sentences
+      between paragraphs are written by the application from fixed templates. There is nothing in a
+      reading that is not either receipted or deliberately empty of content.
+      <a href="method.html">How that works →</a>
+    </p>
+
+    <h2>Does my archive leave my computer?</h2>
+    <p>
+      <strong>The counting never does.</strong> The river, the eras, the episodes, the patterns, the
+      exports — all of it is computed on your machine, for free, forever. The server refuses to start
+      if it is listening on anything but loopback, and a test in the build proves it.
+    </p>
+    <p>
+      <strong>The written readings are your choice.</strong> They need a language model, and you pick
+      which: a local one (nothing leaves), your Claude subscription, or your own API key. You see the
+      cost before anything runs. The default is local-only.
+    </p>
+    <p>
+      No hosted archive, no application accounts, and no telemetry. Off-device model use is explicit
+      and opt-in. <a href="privacy.html">The full privacy position →</a> ·
+      <a href="security.html">what it does <em>not</em> protect you from →</a>
+    </p>
+
+    <h2>What it reads today</h2>
+    <p>
+      <strong>Android SMS/MMS archives</strong>, exported with the <em>SMS Backup &amp; Restore</em>
+      app. That is the only input the parser understands right now.
+    </p>
+    <div class="note">
+      <p>
+        <strong>iPhone is not supported yet.</strong> There is no path for an iPhone backup, and
+        iMessage traffic isn't in an Android SMS archive at all. If both of you were on iPhone, the
+        archive doesn't exist. iMessage and WhatsApp are the next major version, not a promise with a
+        date on it.
+      </p>
+    </div>
+
+    <h2>Try it without trusting it first</h2>
+    <p>
+      <a href="demo/">Try the fictional demo</a> — the real application, in your browser, reading an
+      invented couple's archive. Nothing to install, nothing of yours involved, and it talks to
+      nothing but this site. Or run <code>npm run demo:serve</code> from the source for the same thing
+      with the writes switched on. <a href="demo.html">More about the demo →</a>
+    </p>
+
+    <h2>What it costs</h2>
+    <p>
+      The software is free and always will be — AGPL, source open, the analysis unpaywalled. A signed
+      one-click installer is planned at <strong>$29</strong> for the first hundred people and
+      <strong>$49</strong> after that. It is not for sale yet and there is nothing to buy on this site.
+      <a href="pricing.html">Why it's priced that way →</a>
+    </p>
+
+    <h2>Or build it yourself</h2>
+    <p>
+      Node 22 or newer, five minutes, one command. The analysis is the same code either way; what the
+      installer adds is the packaging — signing, guided setup, migrations, updates.
+      <a href="download.html">Instructions →</a>
+    </p>
+
+    <div class="note clay">
+      <p>
+        <strong>What this is not.</strong> Not a therapist. Not a judge of who was right. Not an abuse
+        detector. Not a way to build a case against someone. It shows you what was said and when, and
+        it points at the words. Everything else is your reading.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Between Mirror — free software under the AGPL. No telemetry, ever.</span>
+    <span>
+      <a href="https://github.com/between-mirror/between">Source</a> ·
+      <a href="security.html">Security</a> ·
+      <a href="https://github.com/between-mirror/between/blob/main/SUPPORT.md">Support</a> ·
+      <a href="pricing.html#sponsor">Sponsor maintenance</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>

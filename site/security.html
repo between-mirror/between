@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security — Between Mirror</title>
+<meta name="description" content="The threat model, what is enforced versus merely intended, how to report a vulnerability, and release provenance.">
+<link rel="canonical" href="https://between-mirror.github.io/between/security.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Between Mirror">
+<meta property="og:url" content="https://between-mirror.github.io/between/security.html">
+<meta property="og:title" content="Security — Between Mirror">
+<meta property="og:description" content="The threat model, what is enforced versus merely intended, how to report a vulnerability, and release provenance.">
+<meta property="og:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<meta property="og:image:width" content="1440">
+<meta property="og:image:height" content="900">
+<meta property="og:image:alt" content="Between Mirror showing a warmth-and-tension river across two years of a fictional couple's messages, with a report card of counted statistics beneath it.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Security — Between Mirror">
+<meta name="twitter:description" content="The threat model, what is enforced versus merely intended, how to report a vulnerability, and release provenance.">
+<meta name="twitter:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<!-- A page about not leaking should not leak the page you came from. -->
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EFECE4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11151D">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="mark" href="./">Between Mirror</a>
+    <nav class="site" aria-label="Site">
+      <a href="./">Home</a>
+      <a href="demo.html">Demo</a>
+      <a href="download.html">Get it</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="security.html" aria-current="page">Security</a>
+      <a href="method.html">Method</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1>Security</h1>
+    <p class="lede">
+      The useful version of this page is the part that says what is <em>not</em> protected. A security
+      page that only lists strengths is marketing.
+    </p>
+  </section>
+
+  <section class="wrap prose">
+    <h2>Reporting a vulnerability</h2>
+    <p>
+      Please do not open a public issue. Use a
+      <a href="https://github.com/between-mirror/between/security/advisories/new">GitHub security
+      advisory</a>, which stays private until a fix ships. Acknowledged within 48 hours, fixed and
+      released as a patch, then published with an honest affected-version range.
+    </p>
+
+    <h2>What is actually enforced</h2>
+    <p>Each of these is an enforced invariant with a regression test — that is the difference between a promise and a control the build continuously checks:</p>
+    <ul>
+      <li><strong>Loopback-only.</strong> The server refuses to boot on a non-loopback host, and rejects a rebinding Host or a foreign Origin.</li>
+      <li><strong>No telemetry.</strong> Zero analytics dependencies, checked in the build.</li>
+      <li><strong>Server-side engine enforcement.</strong> The client cannot choose an engine outside your mode; there is no silent fallback to the test mock, which exists only under a test flag.</li>
+      <li><strong>The evidence chain.</strong> Model results are verified against the job they claim to answer, re-validated after cleaning, and every claim's receipts must resolve to real messages or the claim is dropped.</li>
+      <li><strong>Immutable releases.</strong> A version identifies one tree forever. Corrections are a new patch version; tags never move.</li>
+    </ul>
+
+    <h2>What is not protected</h2>
+    <div class="note clay">
+      <p><strong>Anyone with your unlocked computer has your archive.</strong> There is no app password, and adding one would be theatre against someone already at your desk.</p>
+      <p><strong>No encryption at rest.</strong> Deliberately deferred: on a tool with no accounts and no recovery, a forgotten passphrase means losing something irreplaceable. Best-effort owner-only file permissions and a loud warning if the folder looks cloud-synced are the current posture.</p>
+      <p><strong>A cloud-synced folder defeats all of this.</strong> If the app sits in OneDrive or Dropbox, your archive is on someone else's servers regardless of what this program does.</p>
+      <p><strong>Model containment is tool-level, not OS-level.</strong> When the reading runs through a Claude subscription it runs with restricted tools in a staged temp folder holding only the pending jobs — no database, no archive, no repository, no home directory. That is containment by configuration. A real operating-system boundary arrives with the packaged desktop app, and until then this is described exactly as it is.</p>
+      <p><strong>Archive text is untrusted input.</strong> Someone who sent you messages years ago could have written something intended to manipulate a model reading them later. Under the documented Claude Code tool-policy assumptions, the intended prompt-injection ceiling is a dishonest result file. Because this is not OS-level isolation, Between Mirror does not claim protection against a failure in that containment layer.</p>
+    </div>
+
+    <h2>A review found real defects, and here is what happened</h2>
+    <p>
+      An adversarial security and grounding review in July 2026 found that several core promises were
+      made by convention rather than by mechanism, and that a few were quietly false. Promotion was
+      stopped and the boundaries were rebuilt first. Every original finding is fixed with a regression
+      test; what remains open is listed as open.
+    </p>
+    <p>
+      The current status — fixed, deferred by design, and newly tracked — is kept in
+      <a href="https://github.com/between-mirror/between/blob/main/docs/STATUS.md">STATUS.md</a> and
+      updated with every release. A review is a snapshot, not a certificate.
+    </p>
+
+    <h2>Provenance</h2>
+    <p>
+      Every release is an immutable tag and a commit SHA on the public repository, published through a
+      single scripted path that refuses to publish if a version would name a second tree. Signed
+      installers, checksums, an SBOM and build attestation arrive with the packaged desktop app.
+    </p>
+    <p class="small">
+      Full documents:
+      <a href="https://github.com/between-mirror/between/blob/main/docs/THREAT-MODEL.md">THREAT-MODEL.md</a> ·
+      <a href="https://github.com/between-mirror/between/blob/main/docs/PRIVACY-INVARIANTS.md">PRIVACY-INVARIANTS.md</a> ·
+      <a href="https://github.com/between-mirror/between/blob/main/SECURITY.md">SECURITY.md</a>
+    </p>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Between Mirror — free software under the AGPL. No telemetry, ever.</span>
+    <span>
+      <a href="https://github.com/between-mirror/between">Source</a> ·
+      <a href="security.html">Security</a> ·
+      <a href="https://github.com/between-mirror/between/blob/main/SUPPORT.md">Support</a> ·
+      <a href="pricing.html#sponsor">Sponsor maintenance</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>

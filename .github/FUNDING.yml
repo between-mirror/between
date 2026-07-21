@@ -1,0 +1,7 @@
+# Sponsorship goes to the project, not a person. The software is free and AGPL forever;
+# sponsorship pays for maintenance hours — never features, never data.
+# Commented out deliberately. An uncommented entry here renders a "Sponsor" button on the repository,
+# and the org's Sponsors profile is not set up yet — so the button led to a page you cannot sponsor
+# from. A dead affordance is worse than no affordance, and site/pricing.html says plainly that there
+# is nowhere to send money yet. Uncomment in the same change that enables the Sponsors profile.
+# github: [between-mirror]

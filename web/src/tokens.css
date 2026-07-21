@@ -1,0 +1,73 @@
+/* Between — design tokens. Single source: the studio brief (docs/between-brief.html) is commit one
+   of this design system (Addendum A.7). web/src/tokens.css is a copy of this file.
+   Rules: sentiment is amber↔slate, NEVER red/green. Severity tops out at clay — no alarm-red.
+   Both themes always; components style through tokens only. */
+
+:root {
+  /* ground — warm limestone cooled by ink-blue (deliberately not cream/terracotta) */
+  --paper:   #EFECE4;
+  --surface: #F7F5EF;
+  --raised:  #FBFAF5;
+  --ink:       #222A38;
+  --ink-soft:  #4B5464;
+  --ink-faint: #7C8494;
+  --line:   rgba(34,42,56,.14);
+  --line-2: rgba(34,42,56,.26);
+
+  /* sentiment poles + severity */
+  --warmth:      #B87A2B;   /* positive pole (river: above baseline) */
+  --warmth-ink:  #8F5E14;   /* small text on paper */
+  --warmth-glow: rgba(184,122,43,.16);
+  --tension:     #43587B;   /* negative pole (river: below baseline) */
+  --tension-ink: #374A6B;
+  --clay:        #A6614A;   /* max severity; also hard-moment bands (amber→clay→deep clay) */
+
+  /* type — correspondence serif for reading, humanist sans for interface, mono for data */
+  --serif: "Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:  "Segoe UI","Avenir Next",ui-sans-serif,system-ui,sans-serif;
+  --mono:  "Cascadia Code",ui-monospace,Consolas,monospace;
+
+  /* scale */
+  --text-xs:.72rem; --text-sm:.85rem; --text-base:1.02rem; --text-lg:1.2rem;
+  --text-xl:clamp(1.6rem,1.3rem + 1.6vw,2.35rem); --text-display:clamp(3rem,2rem + 8vw,6.2rem);
+  --leading-body:1.72; --measure:63ch;
+  --track-label:.14em;                 /* uppercase labels */
+
+  /* space / shape / motion */
+  --sp-1:4px; --sp-2:8px; --sp-3:14px; --sp-4:22px; --sp-5:36px; --sp-6:56px;
+  --radius:14px; --radius-lg:20px;
+  --dur-quiet:240ms; --dur-slow:400ms; --ease:cubic-bezier(.4,0,.2,1);
+  /* motion rule: fades and gentle translate only; nothing celebratory over emotional data;
+     all motion gated by prefers-reduced-motion */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:#11151D; --surface:#171E28; --raised:#1C242F;
+    --ink:#EAE5D9; --ink-soft:#B4B9C3; --ink-faint:#868D9C;
+    --line:rgba(234,229,217,.12); --line-2:rgba(234,229,217,.24);
+    --warmth:#E2A64A; --warmth-ink:#E9B466; --warmth-glow:rgba(226,166,74,.16);
+    --tension:#7E92B4; --tension-ink:#93A5C4; --clay:#C6795F;
+  }
+}
+/* the viewer's explicit toggle must win in BOTH directions */
+:root[data-theme="light"] {
+  --paper:#EFECE4; --surface:#F7F5EF; --raised:#FBFAF5;
+  --ink:#222A38; --ink-soft:#4B5464; --ink-faint:#7C8494;
+  --line:rgba(34,42,56,.14); --line-2:rgba(34,42,56,.26);
+  --warmth:#B87A2B; --warmth-ink:#8F5E14; --warmth-glow:rgba(184,122,43,.16);
+  --tension:#43587B; --tension-ink:#374A6B; --clay:#A6614A;
+}
+:root[data-theme="dark"] {
+  --paper:#11151D; --surface:#171E28; --raised:#1C242F;
+  --ink:#EAE5D9; --ink-soft:#B4B9C3; --ink-faint:#868D9C;
+  --line:rgba(234,229,217,.12); --line-2:rgba(234,229,217,.24);
+  --warmth:#E2A64A; --warmth-ink:#E9B466; --warmth-glow:rgba(226,166,74,.16);
+  --tension:#7E92B4; --tension-ink:#93A5C4; --clay:#C6795F;
+}
+
+/* chart conventions (dataviz):
+   - river: warmth fill above baseline (gradient to transparent), tension below; thickness = volume
+   - confidence ribbon: --ink-faint at low opacity; coverage hatch: 45° --ink-faint lines
+   - severity bands: color-mix of --warmth → --clay; never a red
+   - always redundant-encode (position + glyph + label); tabular-nums on all numeric columns */

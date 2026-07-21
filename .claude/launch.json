@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--workspace",
+        "web",
+        "run",
+        "dev"
+      ],
+      "port": 5273
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "tsx",
+        "server/src/server.ts"
+      ],
+      "port": 5274
+    },
+    {
+      "name": "demo",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "scripts/demo-serve.mjs"
+      ],
+      "port": 5273
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Between pre-commit — privacy linter (T-CLEAN). Enable with: npm run hooks:install
+node scripts/check-clean.mjs --staged || exit 1

@@ -1,0 +1,111 @@
+# ─────────────────────────────────────────────────────────────
+#  NEVER commit personal data. This repo is planning/design ONLY.
+# ─────────────────────────────────────────────────────────────
+
+# The SMS/MMS backup archive (the source data)
+*.xml
+sms-*.xml
+calls-*.xml
+# …but the synthetic demo archive (fictional Alex & Jordan) SHIPS — it's the showpiece.
+!examples/demo-archive.xml
+
+# Any local message store / database
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlcipher
+
+# Analysis job/result transport, caches, decoded media, exports
+/airlock/
+/jobs/
+/results/
+/cache/
+/data/
+/media/
+/attachments/
+/exports/
+/.between/
+
+# Local privacy pattern list for the T-CLEAN linter (must never be committed)
+personal-patterns.txt
+
+# Per-machine tool settings. These MUST be named here rather than left to an operator's personal
+# global gitignore: the release rebuild deliberately ignores the global file so that what ships
+# depends on this repository alone, which means a path only the global file excludes is a path this
+# repo would happily publish. .claude/settings.local.json records approved tool permissions and local
+# paths, and it appears the first time a permission is approved for this project.
+.claude/settings.local.json
+*.local.json
+
+# Editor and OS residue. Named here for the same reason: the release preflight reads the tree with
+# THIS file's rules only, ignoring the operator's personal global gitignore, so anything the repo does
+# not classify stops a release. `*.orig` and `*.rej` appear after every conflicted merge or rebase,
+# and the resulting abort names files the operator's own `git status` insists do not exist.
+*~
+*.swp
+*.orig
+*.rej
+.DS_Store
+Thumbs.db
+
+# Local database(s) at the project root
+between.db*
+
+# "Your data" -> Back up now writes timestamped copies here (they are databases; never commit one)
+/backups/
+examples/backups/
+
+# Secrets / environment
+.env
+.env.*
+*.key
+*.pem
+
+# Node / build tooling
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+*.log
+npm-debug.log*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+# Private exploration handoff (personal findings — never commit)
+docs/FABLE-EXPLORATION.md
+
+# Author's private development journal — reads as a personal log of user zero's own archive
+# (aggregate stats, decisions). Kept out of the public repo; the design brief (between-brief.html)
+# and the test plan (TESTING.md) stay in, name-detached.
+docs/DECISIONS.md
+
+# The internal build scaffolding. These were published from v0.1.0 through v0.3.2 and should never
+# have been: they are the contract between a planning phase and a build phase, written for whoever was
+# building, and they carry two kinds of thing the public repo must not.
+#
+# The first is PERSONAL DATA about the author's own archive — its exact size and message counts, its
+# span, the number of people in it, and the literal local path it sits at. HANDOFF.md states, as
+# binding invariant 3, "No personal data in code, prompts, tests, or the repo — ever". It then gives
+# the counts. The document announcing the rule was the clearest breach of it.
+#
+# The second is the private shape of how this was made: which model did which job, phase gates,
+# division of labour. Not dangerous, just nobody else's business and not a description of the product.
+#
+# They stay on phase3 because they are a real record of how this was built. They are simply not
+# publishable, and the release rebuild drops them the same way it drops the journal.
+HANDOFF.md
+GAMEPLAN.md
+docs/GAMEPLAN-PHASE3.md
+docs/HANDOFF-READINESS.md
+
+# Built demo bundle (produced by `npm run demo:build`, assembled in CI for Pages).
+# The captured DATA in site/demo-data IS tracked and reviewable; the bundle is not.
+site/demo/

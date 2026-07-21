@@ -1,0 +1,40 @@
+{
+  "name": "between",
+  "version": "0.4.1",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "description": "Between Mirror — turn years of messages into a private, explorable relationship history, with the words underneath every observation.",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check:clean": "node scripts/check-clean.mjs",
+    "check:clean:staged": "node scripts/check-clean.mjs --staged",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "typecheck": "npm --workspace server run typecheck && npm --workspace web run typecheck",
+    "test": "npm --workspace server run test && npm --workspace web run test",
+    "ingest": "tsx server/src/cli/ingest.ts",
+    "analyze": "tsx server/src/cli/analyze.ts",
+    "drain": "tsx server/src/cli/drain.ts",
+    "reflect": "tsx server/src/cli/reflect.ts",
+    "ingest-results": "tsx server/src/cli/ingest-results.ts",
+    "metrics": "tsx server/src/cli/metrics.ts",
+    "dev:api": "npm --workspace server run dev",
+    "dev:web": "npm --workspace web run dev",
+    "dev": "concurrently -k \"npm:dev:api\" \"npm:dev:web\"",
+    "demo": "tsx server/src/cli/gen-demo.ts",
+    "demo:serve": "npm run demo && node scripts/demo-serve.mjs",
+    "capture:media": "node scripts/capture-media.mjs",
+    "demo:export": "tsx server/src/cli/demo-export.ts",
+    "demo:build": "npm run demo && npm run demo:export && npm --workspace web run build:demo && node scripts/demo-finalize.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "playwright": "^1.61.1"
+  }
+}

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo — Between Mirror</title>
+<meta name="description" content="See Between Mirror running on a fictional couple. No import, nothing of yours, no account.">
+<link rel="canonical" href="https://between-mirror.github.io/between/demo.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Between Mirror">
+<meta property="og:url" content="https://between-mirror.github.io/between/demo.html">
+<meta property="og:title" content="Demo — Between Mirror">
+<meta property="og:description" content="See Between Mirror running on a fictional couple. No import, nothing of yours, no account.">
+<meta property="og:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<meta property="og:image:width" content="1440">
+<meta property="og:image:height" content="900">
+<meta property="og:image:alt" content="Between Mirror showing a warmth-and-tension river across two years of a fictional couple's messages, with a report card of counted statistics beneath it.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Demo — Between Mirror">
+<meta name="twitter:description" content="See Between Mirror running on a fictional couple. No import, nothing of yours, no account.">
+<meta name="twitter:image" content="https://between-mirror.github.io/between/media/hero-river.png">
+<!-- A page about not leaking should not leak the page you came from. -->
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EFECE4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11151D">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="mark" href="./">Between Mirror</a>
+    <nav class="site" aria-label="Site">
+      <a href="./">Home</a>
+      <a href="demo.html" aria-current="page">Demo</a>
+      <a href="download.html">Get it</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="security.html">Security</a>
+      <a href="method.html">Method</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1>Meet Alex &amp; Jordan</h1>
+    <p class="lede">
+      They are invented. Twenty-six months of made-up messages — a warm start, the ordinary friction of
+      moving in together, and the repair that follows most fights. A normal, hard, loving relationship,
+      written so you can see exactly what this tool does and doesn't do before trusting it with your own
+      years.
+    </p>
+    <div class="note warm">
+      <p>
+        <strong>Between Mirror never hosts anyone's archive.</strong> Not theirs, not yours, not for a
+        demo. Alex and Jordan exist because the alternative — showing you a real couple's messages —
+        is the exact thing this project refuses to do.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap prose">
+    <h2>Run it yourself, in two commands</h2>
+    <p>The demo ships with the source. It opens the whole instrument on the fictional archive:</p>
+<pre><code>git clone https://github.com/between-mirror/between.git
+cd between &amp;&amp; npm install
+npm run demo:serve      # → http://localhost:5273</code></pre>
+    <p class="small">
+      Node 22 or newer. Your own <code>between.db</code> is never touched — the demo runs from its own
+      database file.
+    </p>
+
+    <h2>Or click through it right now</h2>
+    <p>
+      <a class="btn btn--primary" href="demo/">Try the fictional demo →</a>
+    </p>
+    <p>
+      That is the <em>actual application</em> — the same code, the same views — reading a frozen copy
+      of Alex &amp; Jordan's archive. It runs entirely in your browser: it loads a set of pre-computed
+      JSON files from this site and talks to nothing else, which is asserted by a test in the build
+      rather than promised here.
+    </p>
+    <p>
+      Two honest limits. Everything that would <em>change</em> something — importing, labelling,
+      freezing a reading, exporting, deleting — is turned off, because there is nothing of yours to
+      change. And Ask offers a few prepared questions rather than a text box, since answering a new
+      one needs a language model and a real archive. Both say so when you touch them.
+    </p>
+  </section>
+
+  <section class="wrap">
+    <figure>
+      <img src="media/hero-river.png" width="1440" height="900" loading="lazy"
+           alt="The Home surface: a warmth-and-tension river across 26 months with a report card of counted statistics beneath it.">
+      <figcaption>Home — the thread at a glance.</figcaption>
+    </figure>
+    <figure>
+      <img src="media/episode.png" width="1440" height="900" loading="lazy"
+           alt="The Episodes view listing eight hard stretches with dates, who started, severity and who repaired.">
+      <figcaption>Explore → Episodes — the rough patches, each row opening the real messages.</figcaption>
+    </figure>
+    <figure>
+      <img src="media/receipt.png" width="1440" height="900" loading="lazy"
+           alt="A frozen reading with one claim opened to show the exact message it rests on.">
+      <figcaption>Readings — every line stands on messages you can open.</figcaption>
+    </figure>
+    <figure>
+      <img src="media/ask.png" width="1440" height="900" loading="lazy"
+           alt="The Ask view answering “did we fight about money?” with “The archive doesn't hold enough to answer that honestly.”">
+      <figcaption>Ask — and when the archive can't support an answer, it says so instead of inventing one.</figcaption>
+    </figure>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Between Mirror — free software under the AGPL. No telemetry, ever.</span>
+    <span>
+      <a href="https://github.com/between-mirror/between">Source</a> ·
+      <a href="security.html">Security</a> ·
+      <a href="https://github.com/between-mirror/between/blob/main/SUPPORT.md">Support</a> ·
+      <a href="pricing.html#sponsor">Sponsor maintenance</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>

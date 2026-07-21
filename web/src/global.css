@@ -1,0 +1,10 @@
+/* Base reset + ground. Component styles are the web agent's; this only sets the page. */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}

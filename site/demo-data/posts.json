@@ -1,0 +1,5 @@
+{
+  "POST /api/threads/1/ask/plan {\"query\":\"sorry\",\"filters\":{}}": "ask_1_sorry.json",
+  "POST /api/threads/1/ask/plan {\"query\":\"miss you\",\"filters\":{}}": "ask_1_miss_you.json",
+  "POST /api/threads/1/ask/plan {\"query\":\"kids\",\"filters\":{}}": "ask_1_kids.json"
+}

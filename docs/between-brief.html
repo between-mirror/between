@@ -1,0 +1,638 @@
+<title>Between — Studio Brief</title>
+<style>
+  :root{
+    /* Light — warm limestone paper cooled by ink-blue; warmth lives in the accents, not the ground */
+    --paper:#EFECE4;
+    --surface:#F7F5EF;
+    --raised:#FBFAF5;
+    --ink:#222A38;
+    --ink-soft:#4B5464;
+    --ink-faint:#7C8494;
+    --line:rgba(34,42,56,.14);
+    --line-2:rgba(34,42,56,.26);
+    --warmth:#B87A2B;        /* amber — the positive pole of the sentiment scale */
+    --warmth-ink:#8F5E14;    /* darker amber for small text on paper */
+    --warmth-glow:rgba(184,122,43,.16);
+    --tension:#43587B;       /* slate-indigo — the negative pole */
+    --tension-ink:#374A6B;
+    --clay:#A6614A;          /* severity — never alarm red */
+    --night:#12161F;         /* committed dark inset, both themes */
+    --night-surface:#1A212C;
+    --night-ink:#EAE5D9;
+    --night-soft:#AEB4C1;
+    --night-line:rgba(234,229,217,.14);
+    --radius:14px;
+    --measure:63ch;
+    --serif:"Palatino Linotype","Iowan Old Style",Palatino,"Book Antiqua","URW Palladio L",Georgia,serif;
+    --sans:"Segoe UI","Avenir Next","Franklin Gothic",ui-sans-serif,system-ui,-apple-system,sans-serif;
+    --mono:"Cascadia Code","Cascadia Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#11151D;
+      --surface:#171E28;
+      --raised:#1C242F;
+      --ink:#EAE5D9;
+      --ink-soft:#B4B9C3;
+      --ink-faint:#868D9C;
+      --line:rgba(234,229,217,.12);
+      --line-2:rgba(234,229,217,.24);
+      --warmth:#E2A64A;
+      --warmth-ink:#E9B466;
+      --warmth-glow:rgba(226,166,74,.16);
+      --tension:#7E92B4;
+      --tension-ink:#93A5C4;
+      --clay:#C6795F;
+    }
+  }
+  :root[data-theme="light"]{
+    --paper:#EFECE4;--surface:#F7F5EF;--raised:#FBFAF5;--ink:#222A38;--ink-soft:#4B5464;--ink-faint:#7C8494;
+    --line:rgba(34,42,56,.14);--line-2:rgba(34,42,56,.26);
+    --warmth:#B87A2B;--warmth-ink:#8F5E14;--warmth-glow:rgba(184,122,43,.16);--tension:#43587B;--tension-ink:#374A6B;--clay:#A6614A;
+  }
+  :root[data-theme="dark"]{
+    --paper:#11151D;--surface:#171E28;--raised:#1C242F;--ink:#EAE5D9;--ink-soft:#B4B9C3;--ink-faint:#868D9C;
+    --line:rgba(234,229,217,.12);--line-2:rgba(234,229,217,.24);
+    --warmth:#E2A64A;--warmth-ink:#E9B466;--warmth-glow:rgba(226,166,74,.16);--tension:#7E92B4;--tension-ink:#93A5C4;--clay:#C6795F;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--serif);font-size:clamp(1rem,.96rem + .2vw,1.08rem);line-height:1.72;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--warmth-glow)}
+  a{color:inherit}
+  h1,h2,h3{text-wrap:balance;font-weight:600;line-height:1.15;margin:0}
+  p{margin:0}
+
+  /* ---- layout scaffolding ---- */
+  .wrap{max-width:1120px;margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+  .prose{max-width:var(--measure);margin-left:auto;margin-right:auto}
+  .band{padding:clamp(56px,9vh,110px) 0;border-top:1px solid var(--line)}
+  .band:first-child{border-top:0}
+  .stack{display:flex;flex-direction:column}
+  .eyebrow{
+    font-family:var(--sans);font-size:.72rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--warmth-ink);margin:0 0 18px
+  }
+  .eyebrow.cool{color:var(--tension-ink)}
+  h2{font-size:clamp(1.6rem,1.3rem + 1.6vw,2.35rem);letter-spacing:-.01em}
+  h3{font-family:var(--sans);font-size:1.02rem;font-weight:650;letter-spacing:-.005em}
+  .lede{font-size:clamp(1.16rem,1.05rem + .6vw,1.45rem);line-height:1.5;color:var(--ink);letter-spacing:-.01em}
+  .dim{color:var(--ink-soft)}
+  .faint{color:var(--ink-faint)}
+  .tnum{font-variant-numeric:tabular-nums}
+
+  /* ---- top ambient river strip ---- */
+  .river-strip{position:relative;width:100%;height:clamp(120px,20vh,180px);display:block;border-bottom:1px solid var(--line)}
+  .river-strip canvas{position:absolute;inset:0;width:100%;height:100%}
+  .strip-cap{
+    position:absolute;left:clamp(20px,5vw,56px);bottom:12px;z-index:2;
+    font-family:var(--sans);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)
+  }
+
+  /* ---- hero ---- */
+  .hero{padding-top:clamp(40px,7vh,80px);padding-bottom:clamp(40px,7vh,72px)}
+  .hero .title{font-size:clamp(3rem,2rem + 8vw,6.2rem);letter-spacing:-.03em;line-height:.98;margin:0 0 6px}
+  .hero .title em{font-style:italic;font-weight:500;color:var(--warmth-ink)}
+  .hero .sub{font-size:clamp(1.2rem,1rem + 1vw,1.7rem);line-height:1.35;color:var(--ink-soft);max-width:24ch;margin:14px 0 0}
+  .hero .say{margin-top:26px;max-width:52ch;color:var(--ink-soft)}
+  .promise{
+    display:inline-flex;align-items:baseline;gap:.5ch;margin-top:30px;
+    font-family:var(--sans);font-weight:600;font-size:.82rem;letter-spacing:.04em;
+    padding:9px 15px;border:1px solid var(--line-2);border-radius:100px;color:var(--ink)
+  }
+  .promise b{color:var(--warmth-ink)}
+
+  .facts{display:flex;flex-wrap:wrap;gap:0;margin-top:44px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+  .fact{flex:1 1 150px;padding:18px 20px;border-left:1px solid var(--line)}
+  .fact:first-child{border-left:0}
+  .fact .n{font-family:var(--sans);font-weight:680;font-size:clamp(1.3rem,1.1rem + 1vw,1.7rem);letter-spacing:-.02em;color:var(--ink)}
+  .fact .l{font-family:var(--sans);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-top:4px}
+  .fact .n em{font-style:normal;color:var(--warmth-ink)}
+
+  /* ---- generic cards / chips ---- */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:.76rem;font-weight:550;
+    padding:5px 11px;border-radius:100px;border:1px solid var(--line-2);color:var(--ink-soft);white-space:nowrap
+  }
+  .chip.cheap{border-color:transparent;background:color-mix(in srgb,var(--tension) 12%,transparent);color:var(--tension-ink)}
+  .chip.llm{border-color:transparent;background:color-mix(in srgb,var(--warmth) 20%,transparent);color:var(--warmth-ink)}
+  .chip.star::before{content:"★";color:var(--warmth-ink);font-size:.7em}
+  .chip.gate{border-style:dashed;color:var(--ink-faint)}
+
+  /* ---- zoom ladder (the centerpiece) ---- */
+  .ladder{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+  .rung{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden;transition:border-color .25s,background .25s}
+  .rung[open]{border-color:var(--line-2);background:var(--raised)}
+  .rung summary{
+    list-style:none;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;
+    padding:18px 22px;
+  }
+  .rung summary::-webkit-details-marker{display:none}
+  .rung summary:focus-visible{outline:2px solid var(--warmth);outline-offset:-2px;border-radius:var(--radius)}
+  .zoomdot{width:12px;height:12px;border-radius:50%;background:var(--tension);position:relative;flex:0 0 auto}
+  .rung:nth-child(1) .zoomdot{transform:scale(.55)}
+  .rung:nth-child(2) .zoomdot{transform:scale(.7)}
+  .rung:nth-child(3) .zoomdot{transform:scale(.85)}
+  .rung:nth-child(4) .zoomdot{transform:scale(1)}
+  .rung:nth-child(5) .zoomdot{transform:scale(1.15);background:var(--warmth)}
+  .rung:nth-child(6) .zoomdot{transform:scale(1.3);background:var(--warmth)}
+  .rung .rname{font-family:var(--sans);font-weight:640;font-size:1.02rem}
+  .rung .rscale{font-family:var(--sans);font-size:.76rem;color:var(--ink-faint);margin-top:2px;letter-spacing:.01em}
+  .rung .rcue{font-family:var(--sans);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);transition:transform .25s}
+  .rung[open] .rcue{color:var(--warmth-ink)}
+  .rbody{padding:0 22px 22px 52px;display:grid;grid-template-columns:1fr;gap:16px}
+  .rgroup .rglabel{font-family:var(--sans);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:9px}
+  .rgroup .rgrow{display:flex;flex-wrap:wrap;gap:8px}
+  .btn-analyze{
+    font-family:var(--sans);font-size:.82rem;font-weight:600;cursor:default;
+    display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;
+    background:color-mix(in srgb,var(--warmth) 15%,var(--raised));border:1px solid color-mix(in srgb,var(--warmth) 40%,transparent);
+    color:var(--warmth-ink);transition:transform .18s,box-shadow .18s
+  }
+  .btn-analyze::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--warmth)}
+  .btn-analyze:hover{transform:translateY(-1px);box-shadow:0 6px 18px var(--warmth-glow)}
+  .rgnote{font-size:.92rem;color:var(--ink-soft);font-family:var(--serif)}
+
+  /* ---- three-tier suite ---- */
+  .tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:8px;align-items:start}
+  .tier{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 22px 24px}
+  .tier .tk{font-family:var(--sans);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)}
+  .tier h3{margin:8px 0 4px}
+  .tier .td{font-size:.94rem;color:var(--ink-soft);margin-bottom:16px}
+  .tier ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+  .tier li{font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);display:flex;gap:9px;align-items:baseline;line-height:1.4}
+  .tier li b{color:var(--ink);font-weight:600}
+  .mk{flex:0 0 auto;width:7px;height:7px;border-radius:2px;margin-top:.5em;background:var(--tension)}
+  .tier.t2 .mk{background:var(--warmth)}
+  .tier.t3 .mk{background:var(--clay)}
+
+  /* ---- night engine panel ---- */
+  .night{background:var(--night);color:var(--night-ink);border-radius:20px;padding:clamp(28px,5vw,54px);border:1px solid var(--night-line)}
+  .night .eyebrow{color:var(--warmth)}
+  .night h2{color:var(--night-ink)}
+  .night .dim{color:var(--night-soft)}
+  .airlock{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:0;margin:30px 0 8px;font-family:var(--mono)}
+  .airlock-scroll{overflow-x:auto}
+  .abox{background:var(--night-surface);border:1px solid var(--night-line);border-radius:12px;padding:20px;min-width:190px}
+  .abox .at{font-family:var(--sans);font-weight:640;font-size:.92rem;color:var(--night-ink)}
+  .abox .ad{font-family:var(--sans);font-size:.78rem;color:var(--night-soft);margin-top:6px;line-height:1.45}
+  .achan{display:flex;flex-direction:column;justify-content:center;gap:14px;padding:0 18px;min-width:200px}
+  .flow{font-size:.74rem;color:var(--warmth);display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .flow.back{color:var(--tension);flex-direction:row-reverse;text-align:right}
+  .arrow{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--night-line),transparent);position:relative}
+  .flow .lab{background:var(--night);padding:2px 6px;border:1px solid var(--night-line);border-radius:6px}
+  .dbbar{margin-top:16px;text-align:center;font-family:var(--sans);font-size:.82rem;color:var(--night-soft);padding:12px;border:1px dashed var(--night-line);border-radius:10px}
+  .dbbar b{color:var(--warmth)}
+
+  /* ---- annotated sentiment river (SVG) ---- */
+  .demo-river{width:100%;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);display:block}
+
+  /* ---- the letter sample ---- */
+  .letter{background:var(--raised);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(26px,4vw,46px);position:relative;max-width:60ch;margin:0 auto}
+  .letter .lmeta{font-family:var(--sans);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .letter p{margin:0 0 16px;font-size:1.08rem;line-height:1.75}
+  .letter .rcpt{color:var(--warmth-ink);border-bottom:1px solid color-mix(in srgb,var(--warmth) 45%,transparent);cursor:default}
+  .letter .close{font-style:italic;color:var(--ink-soft)}
+  .samplenote{font-family:var(--sans);font-size:.78rem;color:var(--ink-faint);text-align:center;margin-top:14px}
+
+  /* ---- care / principles ---- */
+  .principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:8px}
+  .pr{border-left:2px solid var(--line-2);padding:4px 0 4px 16px}
+  .pr h3{font-size:.98rem;margin-bottom:5px}
+  .pr p{font-family:var(--sans);font-size:.85rem;color:var(--ink-soft);line-height:1.5}
+  .pr.warm{border-left-color:var(--warmth)}
+  .pr.cool{border-left-color:var(--tension)}
+  .pr.clay{border-left-color:var(--clay)}
+
+  /* ---- phases timeline ---- */
+  .phases{display:flex;flex-direction:column;gap:0;margin-top:8px;counter-reset:ph -1}
+  .phase{display:grid;grid-template-columns:auto 1fr;gap:20px;padding:20px 0;border-top:1px solid var(--line)}
+  .phase:first-child{border-top:0}
+  .phase .pnum{font-family:var(--sans);font-weight:700;font-size:.78rem;letter-spacing:.06em;color:var(--ink-faint);padding-top:3px;white-space:nowrap}
+  .phase.mvp .pnum{color:var(--warmth-ink)}
+  .phase h3{margin-bottom:5px}
+  .phase p{font-family:var(--sans);font-size:.88rem;color:var(--ink-soft);line-height:1.5}
+  .phase .days{font-family:var(--sans);font-size:.74rem;color:var(--ink-faint);margin-top:6px;letter-spacing:.03em}
+  .mvpband{display:inline-flex;gap:8px;align-items:center;font-family:var(--sans);font-size:.74rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--warmth-ink);margin-bottom:14px}
+  .mvpband::before{content:"";width:22px;height:2px;background:var(--warmth)}
+
+  /* ---- decisions ---- */
+  .decisions{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+  .dec{display:grid;grid-template-columns:1fr auto;gap:16px 24px;align-items:center;padding:16px 0;border-top:1px solid var(--line)}
+  .dec:first-child{border-top:0}
+  .dec .dq{font-family:var(--sans);font-weight:600;font-size:.95rem}
+  .dec .dsub{font-family:var(--sans);font-size:.82rem;color:var(--ink-soft);margin-top:3px;line-height:1.45}
+  .dec .drec{font-family:var(--sans);font-size:.78rem;color:var(--warmth-ink);font-weight:600;text-align:right;white-space:nowrap}
+  @media (max-width:620px){.dec{grid-template-columns:1fr}.dec .drec{text-align:left}}
+
+  .fable{background:color-mix(in srgb,var(--warmth) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--warmth) 30%,var(--line));border-radius:var(--radius);padding:22px 24px;margin-top:24px}
+  .fable .eyebrow{color:var(--warmth-ink)}
+  .fable-split{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
+  @media (max-width:560px){.fable-split{grid-template-columns:1fr}}
+  .fable-split h3{font-size:.9rem;margin-bottom:8px}
+  .fable-split ul{margin:0;padding-left:18px;font-family:var(--sans);font-size:.84rem;color:var(--ink-soft);line-height:1.6}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--ink-faint);font-family:var(--sans);font-size:.82rem}
+
+  /* ---- theme toggle ---- */
+  .toggle{position:fixed;top:16px;right:16px;z-index:20;width:38px;height:38px;border-radius:50%;
+    border:1px solid var(--line-2);background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:blur(6px);
+    color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:color .2s,border-color .2s}
+  .toggle:hover{color:var(--warmth-ink);border-color:var(--line-2)}
+  .toggle:focus-visible{outline:2px solid var(--warmth);outline-offset:2px}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .btn-analyze,.rung,.toggle{transition:none}
+  }
+  a.jump:focus-visible{outline:2px solid var(--warmth);outline-offset:3px}
+</style>
+
+<button class="toggle" id="themeToggle" aria-label="Switch light or dark theme" title="Switch theme">◐</button>
+
+<div class="river-strip">
+  <canvas id="river" aria-hidden="true"></canvas>
+  <span class="strip-cap">warmth above · tension below · thickness is how much was said</span>
+</div>
+
+<header class="band hero">
+  <div class="wrap">
+    <p class="eyebrow reveal">Studio brief · a private, local-first instrument</p>
+    <h1 class="title reveal">Between<em>.</em></h1>
+    <p class="sub reveal">The space between two people, made legible.</p>
+    <p class="say lede reveal">A quiet desktop app that turns years of your own text messages into a compassionate, rigorous mirror — how you showed up, how the weather changed, where it got hard — with the exact words always one tap underneath.</p>
+    <span class="promise reveal">The whole discipline in three words:&nbsp; <b>receipts, not verdicts.</b></span>
+
+    <div class="facts reveal" role="group" aria-label="Your archive at a glance">
+      <div class="fact"><div class="n tnum">200<em> MB+</em></div><div class="l">one file, dumped in</div></div>
+      <div class="fact"><div class="n tnum">100k+</div><div class="l">messages · sms + mms</div></div>
+      <div class="fact"><div class="n tnum">years</div><div class="l">however far your archive reaches</div></div>
+      <div class="fact"><div class="n">Your partner</div><div class="l">your throughline, start to now</div></div>
+    </div>
+  </div>
+</header>
+
+<section class="band">
+  <div class="wrap prose stack" style="gap:20px">
+    <p class="eyebrow reveal">The premise</p>
+    <h2 class="reveal">You wanted to play therapist with yourself. This is the room to do it in.</h2>
+    <p class="reveal dim">You pick a person, a stretch of time, and a question — <em>show me the shape of us, walk me through that week, how did I change, write me something honest</em> — and the app answers with the kind of reading only a language model can give: tone beneath the words, patterns across years, the moment the temperature dropped. Nothing is a diagnosis. Everything is evidence you can open.</p>
+    <p class="reveal dim">Three truths shaped every decision, because getting them wrong would make the whole thing a liar:</p>
+    <div class="principles reveal">
+      <div class="pr cool">
+        <h3>The archive is incomplete</h3>
+        <p>SMS &amp; MMS only — no iMessage or RCS. Some stretches will look quieter than they truly were, so any view that could mistake a gap for silence says so, out loud.</p>
+      </div>
+      <div class="pr warm">
+        <h3>Insight isn't free</h3>
+        <p>There's no API bill — Claude Code does the thinking. But it spends real subscription capacity and time. Before any big run you see an honest estimate, and nothing is ever computed twice.</p>
+      </div>
+      <div class="pr clay">
+        <h3>Fairness isn't always symmetry</h3>
+        <p>Asking someone who was mistreated to "examine their part" is not balance — it's harm. When the signals point one direction, the mirror stops splitting blame and starts offering support.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="drilldown">
+  <div class="wrap">
+    <div class="prose" style="margin-bottom:34px">
+      <p class="eyebrow reveal">What drilling down actually looks like — your open question, answered</p>
+      <h2 class="reveal">The same inbox asks different questions at different distances.</h2>
+      <p class="reveal dim" style="margin-top:16px">You imagined: import the file, see a list of conversations, pick one, drill down. Here's the shape of that. The trick is that <b>the analyses on offer change with your zoom</b> — because the powerful moves for a language model are different at a year's remove than they are inside a single Tuesday-night argument. Cheap, always-on charts are free and instant; the amber buttons are the deliberate, capacity-spending LLM passes, placed exactly where each one earns its keep. Open a rung.</p>
+    </div>
+
+    <div class="ladder reveal">
+      <details class="rung">
+        <summary><span class="zoomdot"></span><span><span class="rname">All conversations</span><span class="rscale">the inbox · every contact you've ever texted</span></span><span class="rcue">open</span></summary>
+        <div class="rbody">
+          <div class="rgroup"><div class="rglabel">Always on · no model</div><div class="rgrow"><span class="chip cheap">volume &amp; span</span><span class="chip cheap">tiny tone sparkline</span><span class="chip cheap">coverage flag</span><span class="chip cheap">last-heard-from</span></div></div>
+          <p class="rgnote">This level is just orientation — a quiet, sortable roster. You spend nothing here. Choose a person to descend.</p>
+        </div>
+      </details>
+
+      <details class="rung" open>
+        <summary><span class="zoomdot"></span><span><span class="rname">A relationship — the whole history</span><span class="rscale">Your partner · your whole history · the panoramic view</span></span><span class="rcue">open</span></summary>
+        <div class="rbody">
+          <div class="rgroup"><div class="rglabel">Always on · no model</div><div class="rgrow"><span class="chip cheap">Sentiment River</span><span class="chip cheap">calendar heatmap</span><span class="chip cheap">report card</span><span class="chip cheap">cadence &amp; latency</span></div></div>
+          <div class="rgroup"><div class="rglabel">Press to analyze · Claude Code</div><div class="rgrow">
+            <span class="btn-analyze">Chapter our story</span>
+            <span class="btn-analyze">Write the long arc</span>
+            <span class="btn-analyze">Find the moments that matter</span>
+            <span class="btn-analyze">How I changed</span>
+          </div></div>
+          <p class="rgnote">At this distance the LLM does what statistics can't: names the eras, narrates the turning points, and writes the long, honest account of those years — grounded in dated exchanges you can open.</p>
+        </div>
+      </details>
+
+      <details class="rung">
+        <summary><span class="zoomdot"></span><span><span class="rname">A chapter</span><span class="rscale">an era · weeks to months — often a stretch it flagged for you</span></span><span class="rcue">open</span></summary>
+        <div class="rbody">
+          <div class="rgroup"><div class="rglabel">Always on · no model</div><div class="rgrow"><span class="chip cheap">sentiment trend</span><span class="chip cheap">before / after a life event</span><span class="chip cheap">rhythm shift</span></div></div>
+          <div class="rgroup"><div class="rglabel">Press to analyze · Claude Code</div><div class="rgrow">
+            <span class="btn-analyze">What changed here?</span>
+            <span class="btn-analyze">How did I show up in this stretch?</span>
+            <span class="btn-analyze">Compare before &amp; after</span>
+          </div></div>
+          <p class="rgnote">Zoomed to months, the question turns from "what happened" to "what shifted" — the model reads the era as a unit and tells you how the two of you were different on the far side of it.</p>
+        </div>
+      </details>
+
+      <details class="rung">
+        <summary><span class="zoomdot"></span><span><span class="rname">A hard week</span><span class="rscale">days · a single back-and-forth that ran hot</span></span><span class="rcue">open</span></summary>
+        <div class="rbody">
+          <div class="rgroup"><div class="rglabel">Always on · no model</div><div class="rgrow"><span class="chip cheap">reply latency</span><span class="chip cheap">hostility pre-screen</span><span class="chip cheap">who texted first</span></div></div>
+          <div class="rgroup"><div class="rglabel">Press to analyze · Claude Code</div><div class="rgrow">
+            <span class="btn-analyze">Walk me through it, turn by turn</span>
+            <span class="btn-analyze">Who escalated — who repaired?</span>
+            <span class="btn-analyze">Map the conflict arc</span>
+          </div></div>
+          <p class="rgnote">Here the LLM is at its sharpest: close reading. Trigger, escalation, the peak, the repair attempt and whether it landed — the anatomy of one conflict, with each beat tied to the message that carried it.</p>
+        </div>
+      </details>
+
+      <details class="rung">
+        <summary><span class="zoomdot"></span><span><span class="rname">A single exchange</span><span class="rscale">one sitting · a handful of turns</span></span><span class="rcue">open</span></summary>
+        <div class="rbody">
+          <div class="rgroup"><div class="rglabel">Press to analyze · Claude Code</div><div class="rgrow">
+            <span class="btn-analyze">Score every message's tone</span>
+            <span class="btn-analyze">Four Horsemen &amp; repair</span>
+            <span class="btn-analyze">Rewrite my side with more care</span>
+          </div></div>
+          <div class="rgroup"><div class="rgrow"><span class="chip gate">partner-only lenses</span><span class="chip gate">gated by power balance</span></div></div>
+          <p class="rgnote">The relationship-science lenses (Gottman, attachment, NVC) only make sense between partners and only run where you've said so — and they read a specific exchange, never label a person.</p>
+        </div>
+      </details>
+
+      <details class="rung">
+        <summary><span class="zoomdot"></span><span><span class="rname">A single message</span><span class="rscale">one text · the atom</span></span><span class="rcue">open</span></summary>
+        <div class="rbody">
+          <div class="rgroup"><div class="rglabel">Tap any bubble</div><div class="rgrow"><span class="btn-analyze">What was the tone here — and why?</span></div></div>
+          <p class="rgnote">Every read resolves to this: the model's one-line reasoning and the precise words it leaned on, with the surrounding thread one tap away. If it can't cite the message, it isn't allowed to make the claim.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="prose" style="margin-bottom:30px">
+      <p class="eyebrow cool reveal">The suite, in three tiers</p>
+      <h2 class="reveal">Cheap math is always on. It also decides where the expensive thinking goes.</h2>
+      <p class="reveal dim" style="margin-top:16px">Tier 1 runs on every message the moment you import, for free. It doubles as the router: the noisy, negative, unusual windows it flags are the ones worth a language model. This is the full map — the first build ships one LLM lens and about fifteen of these metrics, and grows from there.</p>
+    </div>
+    <div class="tiers reveal">
+      <div class="tier t1">
+        <div class="tk">Tier 1 · deterministic</div>
+        <h3>The instruments</h3>
+        <p class="td">Counting, timing, lexicons. No model, recomputed on import.</p>
+        <ul>
+          <li><span class="mk"></span><span><b>Cadence &amp; silence</b> — who initiates, streaks, the long quiets (hedged where coverage is thin)</span></li>
+          <li><span class="mk"></span><span><b>Reply latency</b> — median &amp; drift, yours vs theirs, the slow fade</span></li>
+          <li><span class="mk"></span><span><b>Rhythms</b> — hour × day heatmaps, the late-night share</span></li>
+          <li><span class="mk"></span><span><b>Language surface</b> — we/you/I ratios, laughter, all-caps, emoji fingerprint</span></li>
+          <li><span class="mk"></span><span><b>Lexicon mood</b> — a rolling curve &amp; the negativity spikes worth a closer look</span></li>
+        </ul>
+      </div>
+      <div class="tier t2">
+        <div class="tk">Tier 2 · the LLM lenses</div>
+        <h3>The readings</h3>
+        <p class="td">Grounded in named frameworks. Every claim carries its receipts.</p>
+        <ul>
+          <li><span class="mk"></span><span><b>Emotion &amp; tone</b> — sarcasm, warmth, contempt beyond any lexicon <span class="chip star" style="margin-left:2px"></span></span></li>
+          <li><span class="mk"></span><span><b>Gottman dynamics</b> — the Four Horsemen, bids, whether repairs land</span></li>
+          <li><span class="mk"></span><span><b>Pursue &amp; withdraw</b> — the chase-and-retreat, as roles not labels</span></li>
+          <li><span class="mk"></span><span><b>Conflict lifecycle</b> — episodes, arcs, the unresolved threads</span></li>
+          <li><span class="mk"></span><span><b>Coercive-control screen</b> — flags for reflection, both directions, heavily corroborated</span></li>
+          <li><span class="mk"></span><span><b>The Therapist Letter</b> — the compassionate synthesis, written to you</span></li>
+        </ul>
+      </div>
+      <div class="tier t3">
+        <div class="tk">Tier 3 · over time</div>
+        <h3>The weather system</h3>
+        <p class="td">Built on the two below it. Robust statistics, honest confidence.</p>
+        <ul>
+          <li><span class="mk"></span><span><b>Moments to look at</b> — change-point detection surfaces the dates that turned</span></li>
+          <li><span class="mk"></span><span><b>Hard-moment timeline</b> — hostility spikes, confirmed, with direction &amp; severity</span></li>
+          <li><span class="mk"></span><span><b>Escalation curves</b> — slow-burn vs flashpoint vs repaired</span></li>
+          <li><span class="mk"></span><span><b>Event overlay</b> — mark a breakup, a move; see the before &amp; after</span></li>
+          <li><span class="mk"></span><span><b>Growth scorecard</b> — fewer horsemen, faster repair, warmer ratio</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="night reveal">
+      <p class="eyebrow">The engine · why there's no API key</p>
+      <h2>An airlock, not a phone line.</h2>
+      <p class="dim" style="max-width:60ch;margin-top:14px">The app physically cannot call a model — there's no code path that opens a socket. It writes a job to a folder; you press <b style="color:var(--warmth)">Drain jobs</b> in Claude Code when you're ready; Claude Code reads the job, does the reading, and writes the answer back. Two programs, one shared folder, nothing else. Privacy stops being a promise and becomes a property of the wiring.</p>
+      <div class="airlock-scroll">
+        <div class="airlock">
+          <div class="abox"><div class="at">The app</div><div class="ad">Parses, charts, and renders. Writes the questions. The only thing that ever writes your database.</div></div>
+          <div class="achan">
+            <div class="flow"><span class="lab">jobs/*.json</span><span class="arrow"></span></div>
+            <div class="flow back"><span class="lab">results/*.json</span><span class="arrow"></span></div>
+          </div>
+          <div class="abox"><div class="at">Claude Code</div><div class="ad">Reads pending jobs, does the analysis against a strict schema, writes results back. Never touches your data store.</div></div>
+        </div>
+      </div>
+      <div class="dbbar">Local SQLite · <b>the app is the sole writer</b> · media is never decoded, never sent · re-running unchanged work is a no-op</div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="prose" style="margin-bottom:30px">
+      <p class="eyebrow reveal">What it will feel like</p>
+      <h2 class="reveal">A thoughtful book about your life, with the source underneath every line.</h2>
+    </div>
+    <div class="prose" style="max-width:840px">
+      <svg class="demo-river reveal" viewBox="0 0 840 260" role="img" aria-label="A sentiment river: warmth in amber above the centerline, tension in slate below, with a life-event marker and a hatched region marking likely-missing messages.">
+        <defs>
+          <linearGradient id="gw" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--warmth)" stop-opacity="0"/><stop offset="1" stop-color="var(--warmth)" stop-opacity="0.55"/></linearGradient>
+          <linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--tension)" stop-opacity="0"/><stop offset="1" stop-color="var(--tension)" stop-opacity="0.55"/></linearGradient>
+          <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="var(--ink-faint)" stroke-width="1" opacity="0.35"/></pattern>
+        </defs>
+        <line x1="0" y1="130" x2="840" y2="130" stroke="var(--line-2)" stroke-width="1"/>
+        <path d="M0,118 C90,70 150,60 220,86 C300,116 360,40 440,58 C520,74 560,96 640,70 C720,46 780,84 840,72 L840,130 L0,130 Z" fill="url(#gw)"/>
+        <path d="M0,142 C90,150 150,206 220,196 C300,184 360,232 440,214 C520,198 560,150 640,176 C720,200 780,158 840,168 L840,130 L0,130 Z" fill="url(#gt)"/>
+        <rect x="352" y="18" width="70" height="224" fill="url(#hatch)"/>
+        <text x="387" y="14" text-anchor="middle" font-family="var(--sans)" font-size="9" fill="var(--ink-faint)" letter-spacing="1">GAP · MAY BE MISSING</text>
+        <line x1="620" y1="24" x2="620" y2="236" stroke="var(--clay)" stroke-width="1" stroke-dasharray="3 3"/>
+        <circle cx="620" cy="24" r="3.5" fill="var(--clay)"/>
+        <text x="628" y="28" font-family="var(--sans)" font-size="10" fill="var(--clay)">a life event you marked</text>
+        <text x="10" y="250" font-family="var(--sans)" font-size="10" fill="var(--warmth-ink)">warmth</text>
+        <text x="10" y="34" font-family="var(--sans)" font-size="10" fill="var(--tension-ink)">tension</text>
+      </svg>
+      <p class="samplenote reveal">The hero chart — never a scoreboard. Amber and slate, never red and green; thickness is volume, so the quiet times visibly narrow.</p>
+    </div>
+
+    <div style="height:34px"></div>
+
+    <div class="letter reveal">
+      <div class="lmeta"><span>A reading · not analysis of your messages</span><span>one reading · saved &amp; dated</span></div>
+      <p>You tend to reach first when things go quiet — there's a warmth in that worth naming, and it shows up again and again in the <span class="rcpt">small hellos you send on hard mornings</span>.</p>
+      <p>In the harder stretches, though, a pattern appears: when you feel unheard, the messages <span class="rcpt">get longer and faster</span>, and the reply you're hoping for tends to arrive later, not sooner. It seems to feed itself.</p>
+      <p>None of this is a verdict on either of you. It's one reading of what the words suggest.</p>
+      <p class="close">A question to sit with: the next time the quiet starts, what would it be like to name the feeling once — and then wait?</p>
+    </div>
+    <p class="samplenote">A sample of the <em>voice</em> — strengths first, tentative, tied to receipts, ending in an experiment rather than a diagnosis. It's frozen and dated so a re-read never quietly rewrites what you were told. Written by Fable.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap prose">
+    <p class="eyebrow clay reveal" style="color:var(--clay)">The care built in</p>
+    <h2 class="reveal">The core loop is "re-read the painful relationship." That's designed against, not away from.</h2>
+    <div class="principles reveal" style="margin-top:26px">
+      <div class="pr"><h3>A mirror, never a verdict</h3><p>No diagnostic labels on a person, no "always," no adjudicating who was right. Observations come tentative, anchored, and paired with a question.</p></div>
+      <div class="pr"><h3>Reflection, not rumination</h3><p>Summaries are the front door; raw transcripts are reachable but never pushed. Re-analyzing an ended relationship meets gentle friction and an honest "is this helping?"</p></div>
+      <div class="pr"><h3>Not ammunition</h3><p>There's no "build a case" export. The other person didn't consent to analysis, so everything is framed as your mirror — and real safety needs are routed to a professional.</p></div>
+      <div class="pr clay"><h3>When it looks unsafe</h3><p>A calm, optional support card — backed by a plain keyword tripwire, not the model alone, so it can't quietly miss the worst case. Resources are local and editable.</p></div>
+      <div class="pr cool"><h3>For someone you've lost</h3><p>Mark a contact as gone and the tool softens: no conflict scores or "growth," just warmth over time and the words themselves.</p></div>
+      <div class="pr warm"><h3>Yours alone</h3><p>Local-only, zero telemetry. Only the text you choose to analyze ever leaves the machine — through your own Claude Code. Media never does.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="prose" style="margin-bottom:26px">
+      <span class="mvpband reveal">Phases 0–2 are the first shippable thing</span>
+      <h2 class="reveal">Built in order, so the truth-telling parts are earned, not rushed.</h2>
+      <p class="reveal dim" style="margin-top:14px">Days are focused solo-dev days with heavy Claude Code help. Each phase is useful on its own.</p>
+    </div>
+    <div class="phases reveal">
+      <div class="phase mvp"><div class="pnum">PHASE 0</div><div><h3>Read the file, well</h3><p>Streaming parse of the whole file, a clean normalized store, browse / filter / full-text search, number-normalization &amp; identity merges, reaction &amp; language detection, coverage flags. Media stays as metadata — never decoded.</p><div class="days">≈ 3–5 days · de-risks everything</div></div></div>
+      <div class="phase mvp"><div class="pnum">PHASE 1</div><div><h3>The instruments &amp; one hero chart</h3><p>~15 core metrics computed in SQL, the design system, the Sentiment River and the calendar heatmap, drill-down — a genuinely useful product with zero LLM involved.</p><div class="days">≈ 4–6 days</div></div></div>
+      <div class="phase mvp"><div class="pnum">PHASE 2</div><div><h3>The engine &amp; the first reading</h3><p>The airlock job runner — queue, validation, refusal handling, the no-work-twice cache, the honest progress-and-capacity surface — driving one lens: emotion &amp; warmth over time, feeding the river, drilled to receipts. <b>This is where "LLM-grade" becomes real.</b></p><div class="days">≈ 5–8 days · end of MVP</div></div></div>
+      <div class="phase"><div class="pnum">PHASE 3</div><div><h3>Weather, conflict &amp; the hard moments</h3><p>The temporal layer, conflict episodes with arcs, and the two-stage abuse-spike pipeline — treated as the highest-stakes feature, with the safety investment it demands, plus the power-balance gate enforced end to end.</p><div class="days">≈ 6–10 days</div></div></div>
+      <div class="phase"><div class="pnum">PHASE 4</div><div><h3>The letter, comparison &amp; keepsake</h3><p>The Therapist Letter and the conditional self-reflection, cross-relationship comparison, a beautiful printable export, and finally a double-click desktop wrapper.</p><div class="days">≈ 5–8 days + packaging</div></div></div>
+    </div>
+
+    <div class="fable reveal">
+      <p class="eyebrow">Where Fable comes in</p>
+      <p class="dim" style="font-size:.98rem">One clean seam: Opus fills and validates a strict <span style="font-family:var(--mono);font-size:.85em">analysis.json</span>; code checks it; <b>Fable only ever reads it</b> — turning verified structure into prose that's warm without inventing a thing. Every sentence it writes still has to resolve to a real message, or it's dropped before you see it.</p>
+      <div class="fable-split">
+        <div><h3 style="color:var(--warmth-ink)">Fable writes</h3><ul><li>The Therapist Letter</li><li>The long-arc narrative &amp; "story of us"</li><li>Warm CBT / NVC reframes</li><li>Tone-sensitive glue &amp; captions</li></ul></div>
+        <div><h3 style="color:var(--tension-ink)">Opus &amp; plain code do</h3><ul><li>Classification &amp; schema-valid scoring</li><li>Extraction, change-point interpretation</li><li>Parsing, metrics, statistics — no model</li><li>The safety tripwires &amp; validation</li></ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap prose">
+    <p class="eyebrow reveal">A few calls are yours</p>
+    <h2 class="reveal">Where I'd land — say the word and I adjust.</h2>
+    <div class="decisions reveal" style="margin-top:20px">
+      <div class="dec"><div><div class="dq">The name — is it <em>Between</em>?</div><div class="dsub">It threads through the whole interface, so worth deciding before the design hardens.</div></div><div class="drec">placeholder for now →</div></div>
+      <div class="dec"><div><div class="dq">Run a small local model (Ollama) for the bulk work?</div><div class="dsub">Claude Code is the wrong shape for classifying 200k messages one by one; a local model carries that volume and keeps you inside your plan's limits. I can check your hardware to see if it's viable.</div></div><div class="drec">recommended, if your machine can →</div></div>
+      <div class="dec"><div><div class="dq">Encrypt the database at rest?</div><div class="dsub">This is the most sensitive data an app could hold — but a forgotten passphrase means it's gone for good, no backdoor.</div></div><div class="drec">opt-in, strongly nudged →</div></div>
+      <div class="dec"><div><div class="dq">Hand-label a small set of your own messages to tune the hard-moment detector?</div><div class="dsub">A missed real pattern and a false alarm are both harmful. A little ground truth is the honest way to set the dial — and to stop the confidence labels from being theater.</div></div><div class="drec">recommended before trusting it →</div></div>
+      <div class="dec"><div><div class="dq">Start with just one relationship, 1-to-1?</div><div class="dsub">The relationship-science lenses assume two people; group chats can come later as browse-only.</div></div><div class="drec">yes — one thread first →</div></div>
+    </div>
+    <p class="reveal dim" style="margin-top:34px">The full 61-page plan — every schema, framework, and guardrail — lives in <span style="font-family:var(--mono);font-size:.85em">GAMEPLAN.md</span> in your project. This brief is the shape of it. When you're ready, Phase 0 is the door: I point the parser at your file and give you something to browse by tonight.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <span>Between — a private instrument for one person's reflection.</span>
+    <span>Receipts, not verdicts.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  var btn=document.getElementById('themeToggle');
+  function apply(t){ if(t){root.setAttribute('data-theme',t);} }
+  try{ var saved=localStorage.getItem('between-theme'); if(saved) apply(saved); }catch(e){}
+  btn.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme');
+    if(!cur){ cur = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'; }
+    var next = cur==='dark' ? 'light':'dark';
+    apply(next);
+    try{ localStorage.setItem('between-theme',next); }catch(e){}
+  });
+
+  // scroll reveals
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items=[].slice.call(document.querySelectorAll('.reveal'));
+  if(reduce || !('IntersectionObserver' in window)){
+    items.forEach(function(el){el.classList.add('in');});
+  } else {
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+    },{rootMargin:'0px 0px -8% 0px',threshold:.06});
+    items.forEach(function(el){io.observe(el);});
+  }
+
+  // ambient sentiment river (hero strip)
+  var cv=document.getElementById('river');
+  if(cv && cv.getContext){
+    var ctx=cv.getContext('2d'), W=0,H=0,dpr=1,t=0,raf=null;
+    function tok(n){return getComputedStyle(root).getPropertyValue(n).trim();}
+    function hexA(hex,a){
+      hex=hex.replace('#',''); if(hex.length===3){hex=hex.split('').map(function(c){return c+c;}).join('');}
+      var r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
+      return 'rgba('+r+','+g+','+b+','+a+')';
+    }
+    function size(){
+      dpr=Math.min(window.devicePixelRatio||1,2);
+      W=cv.clientWidth; H=cv.clientHeight;
+      cv.width=Math.max(1,W*dpr); cv.height=Math.max(1,H*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    function envA(x){return 0.55+0.30*Math.sin(x*1.6+t*0.6)+0.14*Math.sin(x*3.4-t*0.4)+0.07*Math.sin(x*6.1+t*0.9);}
+    function envB(x){return 0.55+0.28*Math.sin(x*1.9-t*0.5+1.1)+0.13*Math.sin(x*4.1+t*0.45)+0.06*Math.sin(x*7.0-t*0.8);}
+    function vol(x){return 0.45+0.55*(0.5+0.5*Math.sin(x*0.8-t*0.25+0.6));}
+    function draw(){
+      var warm=tok('--warmth')||'#B87A2B', ten=tok('--tension')||'#43587B';
+      ctx.clearRect(0,0,W,H);
+      var mid=H*0.52, N=110, i, x, xp, amp=H*0.42;
+      // warmth (above)
+      ctx.beginPath(); ctx.moveTo(0,mid);
+      for(i=0;i<=N;i++){ x=i/N; xp=x*W; ctx.lineTo(xp, mid - Math.max(0,envA(x))*vol(x)*amp); }
+      ctx.lineTo(W,mid); ctx.closePath();
+      var gw=ctx.createLinearGradient(0,0,0,mid);
+      gw.addColorStop(0,hexA(warm,0.02)); gw.addColorStop(1,hexA(warm,0.42));
+      ctx.fillStyle=gw; ctx.fill();
+      // tension (below)
+      ctx.beginPath(); ctx.moveTo(0,mid);
+      for(i=0;i<=N;i++){ x=i/N; xp=x*W; ctx.lineTo(xp, mid + Math.max(0,envB(x))*vol(x)*amp); }
+      ctx.lineTo(W,mid); ctx.closePath();
+      var gt=ctx.createLinearGradient(0,mid,0,H);
+      gt.addColorStop(0,hexA(ten,0.42)); gt.addColorStop(1,hexA(ten,0.02));
+      ctx.fillStyle=gt; ctx.fill();
+      // baseline
+      ctx.strokeStyle=hexA(ten,0.18); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(0,mid); ctx.lineTo(W,mid); ctx.stroke();
+    }
+    function loop(){ t+=0.006; draw(); raf=requestAnimationFrame(loop); }
+    size();
+    var reduceM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceM){ t=2.2; draw(); } else { loop(); }
+    var rt; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(function(){ size(); if(reduceM){draw();} },150); });
+    // redraw on theme flip so colors track tokens
+    new MutationObserver(function(){ if(reduceM) draw(); }).observe(root,{attributes:true,attributeFilter:['data-theme']});
+  }
+})();
+</script>
