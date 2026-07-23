@@ -35,7 +35,7 @@ function graph(sourcePath: string): ResolvedGraph {
     recipients: [{ contactTempId: i % 2 === 0 ? 2 : 1, role: 'to' as const }], attachments: [],
   }));
   return {
-    sourceFile: { path: sourcePath, contentSha256: 'd'.repeat(64), importedAt: new Date(BASE).toISOString(), recordCount: 6 },
+    sourceFile: { path: sourcePath, contentSha256: 'd'.repeat(64), importedAt: new Date(BASE).toISOString(), recordCount: 6, kind: 'android_smsbackup' },
     contacts: [
       { tempId: 1, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },
       { tempId: 2, displayName: 'Robin', primaryE164: '+15555550123', isOwner: false, relationshipType: 'partner' },
@@ -207,6 +207,34 @@ describe('delete everything', () => {
       expect(deleteAllData(db, paths, wrong).ok).toBe(false);
     }
     expect((db.raw.prepare('SELECT count(*) n FROM messages').get() as { n: number }).n).toBe(6);
+  });
+
+  it('sweeps the migration backup that sits beside the database', () => {
+    // The upgrade to canonical keys takes a full unencrypted copy of the archive before it starts,
+    // and writes it BESIDE the database — not in backupsDir, which is a sibling folder. The sweep
+    // enumerates directories, so that copy was the one file it never looked at: the panel said
+    // "Deleted everything … 0 backups" while a complete plaintext archive sat next to the database
+    // it had just emptied. This is the worst case the product describes — someone who wants every
+    // trace gone, told it is gone.
+    // Both an older upgrade's copy and the current one: a release that only swept the version it
+    // happens to be on would quietly start leaving the earlier ones behind.
+    const old = `${paths.dbPath}.pre-v1-2026-07-22T00-00-00-000Z.db`;
+    const recent = `${paths.dbPath}.pre-v2-2026-07-22T00-00-01-000Z.db`;
+    for (const f of [old, recent]) writeFileSync(f, 'a whole archive, in the clear');
+    const r = deleteAllData(db, paths, 'delete');
+    expect(r.ok).toBe(true);
+    expect(existsSync(old)).toBe(false);
+    expect(existsSync(recent)).toBe(false);
+    expect(r.message).toMatch(/2 backups/);
+  });
+
+  it('leaves the owner\'s own files in the database folder alone', () => {
+    // The sweep beside the database is narrow on purpose: it matches the migration backup's own
+    // name, not "everything in that folder". People keep the archive somewhere that is theirs.
+    const mine = join(paths.dbPath, '..', 'taxes-2024.pdf');
+    writeFileSync(mine, 'not ours to delete');
+    expect(deleteAllData(db, paths, 'delete').ok).toBe(true);
+    expect(existsSync(mine)).toBe(true);
   });
 
   it('accepts the exact word, and then nothing is left', () => {

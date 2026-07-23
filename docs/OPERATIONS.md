@@ -20,7 +20,8 @@ Arrives via a **GitHub security advisory**, never a public issue ([SECURITY.md](
 1. Acknowledge within 48 hours, even if the answer is "looking at it".
 2. Reproduce, and write the failing test **first** — the test is the artifact that keeps it fixed.
 3. Fix, ship as a patch release, publish the advisory with the honest version range.
-4. Add what it revealed to the **newly tracked** bucket in [STATUS.md](STATUS.md). A review is a
+4. Add the full entry to [POSTMORTEMS.md](POSTMORTEMS.md), and if it is still OPEN, say so in
+   [STATUS.md](STATUS.md) too. STATUS carries what is open; POSTMORTEMS carries the record. A review is a
    snapshot, not a certificate, and STATUS is where that stays true.
 
 A vulnerability that is real but not yet fixed still gets stated in STATUS. Silence while a fix is
@@ -68,8 +69,11 @@ red, and v0.2.3's red build was caused by a cache key nobody thought was part of
 - [ ] `npm run typecheck && npm test` green on the whole suite, locally.
 - [ ] `CHANGELOG.md` entry written in the candor register: what was wrong, what it meant for someone
       using it, what changed. Not a list of commits.
-- [ ] [STATUS.md](STATUS.md) updated — especially the three review buckets (fixed / deferred by design
-      / newly tracked). If the fix is not done, it says "open", not "fixed".
+- [ ] [POSTMORTEMS.md](POSTMORTEMS.md) entry written — cause, what it meant for someone using it,
+      remediation, regression test.
+- [ ] [STATUS.md](STATUS.md) updated **only if something remains open**. STATUS answers "can I trust
+      this today" and has to stay short enough to read; the record lives in POSTMORTEMS. If the fix is
+      not done, STATUS says "open", not "fixed".
 - [ ] Version bumped in all three `package.json` files.
 - [ ] No claim written in the past tense for work that has not shipped yet. This is easy to get wrong
       while writing release notes ahead of the release, and it is the exact overclaim v0.2.1 existed
@@ -133,12 +137,15 @@ Settings to restore, captured 2026-07-21:
 
 | Field | Value |
 |---|---|
-| Description | A local-first instrument for reading your own message archive honestly. A mirror, not a verdict. |
+| Description | A local-first instrument for reading your own message archive — with the words underneath every observation. A mirror, not a verdict. |
 | Website | `https://between-mirror.github.io/between/` |
 | Topics | `data-visualization local-first ollama personal-data privacy-first self-hosted sms sqlite typescript` |
 | Discussions | enabled · Issues enabled · default branch `main` |
 | Pages | build type: GitHub Actions |
 | Branch protection (`main`) | require: `typecheck + tests (ubuntu-latest, node 22 / 24)`, `(windows-latest, node 22 / 24)` |
+
+The Description above is the intended value. The live repository still carries the previous wording:
+changing it writes to a public surface, which is an owner act and not something a build session does.
 
 At the time of the decision the repository had **0 stars, 0 watchers, 0 forks, 0 issues** and one
 waitlist thread with no comments. That is the entire cost, and it only grows from here.

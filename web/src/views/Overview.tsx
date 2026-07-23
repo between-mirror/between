@@ -13,6 +13,7 @@ import { formatCount } from '../lib/format';
 import { VOICE_INTERIM } from '../lib/voice';
 import { Monogram } from '../components/Monogram';
 import { CoverageNotice } from '../components/Coverage';
+import { ArchiveCaution } from '../components/ArchiveCaution';
 import { MomentsShelf } from '../components/MomentsShelf';
 import { StatCard } from '../components/StatCard';
 import { SentimentRiver } from '../components/SentimentRiver';
@@ -32,6 +33,8 @@ interface OverviewProps {
   thread: ThreadSummary;
   /** Drill from an L1 window/receipt to the transcript at a message id. */
   onOpenReceipt?: (messageId: number, sentAtMs: number) => void;
+  /** Open the full archive-health report from the caution card. */
+  onOpenHealth?: () => void;
 }
 
 // Overlay the L1 emotion read onto the deterministic daily series — but ONLY when the model has
@@ -108,7 +111,7 @@ function avgOf(daily: MetricsBundle['daily'], key: 'warmth' | 'tension'): number
 
 // ── the view ─────────────────────────────────────────────────────────────────
 
-export function Overview({ thread }: OverviewProps) {
+export function Overview({ thread, onOpenHealth }: OverviewProps) {
   const [bundle, setBundle] = useState<MetricsBundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -175,6 +178,7 @@ export function Overview({ thread }: OverviewProps) {
             onAnalyze={() => setAnalyzing(true)}
             onRunComplete={() => loadEmotion()}
             onDismissRun={() => setRun(null)}
+            onOpenHealth={onOpenHealth}
           />
         ) : null}
       </div>
@@ -200,10 +204,11 @@ interface OverviewBodyProps {
   onAnalyze: () => void;
   onRunComplete: () => void;
   onDismissRun: () => void;
+  onOpenHealth?: () => void;
 }
 
 function OverviewBody({
-  thread, bundle, emotion, run, onAnalyze, onRunComplete, onDismissRun,
+  thread, bundle, emotion, run, onAnalyze, onRunComplete, onDismissRun, onOpenHealth,
 }: OverviewBodyProps) {
   const { summary, daily: rawDaily, hourDay, coverageConfidence, coverageNote } = bundle;
   const them = thread.displayName.split(/\s+/)[0] || 'Them';
@@ -224,6 +229,10 @@ function OverviewBody({
 
   return (
     <div className="overview-inner">
+      {/* Above everything, including the hero. What is missing from the archive has to be legible
+          before the first chart draws a line through the hole. */}
+      <ArchiveCaution threadId={thread.id} onOpenReport={onOpenHealth} />
+
       <CoverageNotice confidence={coverageConfidence} note={coverageNote} />
 
       {/* a reading in flight — honest, resumable progress rides above the hero */}

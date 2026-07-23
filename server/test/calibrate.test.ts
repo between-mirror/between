@@ -71,19 +71,21 @@ describe('T-CALIBRATE', () => {
       { dir: 'outgoing', ms: Date.UTC(2024, 0, 5), tension: 2, body: 'stop it' },
       { dir: 'incoming', ms: Date.UTC(2024, 0, 6), tension: 2, body: 'no you stop' },
     ]);
-    const sample = sampleHoldout(d2, 1, 4);
-    expect(sample.length).toBeLessThanOrEqual(4);
-    expect(sample.length).toBeGreaterThan(0);
-    for (const it of sample) {
+    // Rubric v2 returns the draw with its seed and its per-band counts, so a calibration can be
+    // reconstructed later; the items themselves carry no more than they did before.
+    const { items } = sampleHoldout(d2, 1, 4);
+    expect(items.length).toBeLessThanOrEqual(4);
+    expect(items.length).toBeGreaterThan(0);
+    for (const it of items) {
       expect(it).toHaveProperty('id'); expect(it).toHaveProperty('dir'); expect(it).toHaveProperty('text');
       expect(it).not.toHaveProperty('tension');                  // the anti-anchoring guarantee
     }
-    expect(new Set(sample.map((s) => s.dir)).size).toBe(2);      // both ME and THEM present
+    expect(new Set(items.map((s) => s.dir)).size).toBe(2);       // both ME and THEM present
 
     // marks rejoin to the model tension + direction server-side
-    const marks = sample.map((s) => ({ id: s.id, label: 'mild' }));
+    const marks = items.map((s) => ({ id: s.id, label: 'dismissal' }));
     const labels = biasLabelsFromMarks(d2, 1, marks);
-    expect(labels.length).toBe(sample.length);
+    expect(labels.length).toBe(items.length);
     for (const l of labels) { expect(['ME', 'THEM']).toContain(l.dir); expect(typeof l.tension).toBe('number'); }
     d2.close();
   });

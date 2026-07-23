@@ -69,7 +69,7 @@ beforeAll(() => {
   const JAN = Date.UTC(2024, 0, 5, 12), FEB = Date.UTC(2024, 1, 5, 12);
   const times = [JAN, JAN + 60_000, JAN + 120_000, FEB, FEB + 60_000, FEB + 120_000];
   const graph: ResolvedGraph = {
-    sourceFile: { path: 'syn-eras.xml', contentSha256: 'e'.repeat(64), importedAt: new Date(JAN).toISOString(), recordCount: times.length },
+    sourceFile: { path: 'syn-eras.xml', contentSha256: 'e'.repeat(64), importedAt: new Date(JAN).toISOString(), recordCount: times.length, kind: 'android_smsbackup' },
     contacts: [
       { tempId: OWNER, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },
       { tempId: THEM, displayName: 'Sam', primaryE164: '+15555550123', isOwner: false, relationshipType: 'partner' },

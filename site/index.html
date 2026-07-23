@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Between Mirror — read your own archive honestly</title>
+<title>Between Mirror — with the words underneath</title>
 <meta name="description" content="Between Mirror turns years of messages into a private, explorable relationship history — with the words underneath every observation. Local-first, open source, no telemetry.">
 <link rel="canonical" href="https://between-mirror.github.io/between/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Between Mirror">
 <meta property="og:url" content="https://between-mirror.github.io/between/">
-<meta property="og:title" content="Between Mirror — read your own archive honestly">
+<meta property="og:title" content="Between Mirror — with the words underneath">
 <meta property="og:description" content="Between Mirror turns years of messages into a private, explorable relationship history — with the words underneath every observation. Local-first, open source, no telemetry.">
 <meta property="og:image" content="https://between-mirror.github.io/between/media/hero-river.png">
 <meta property="og:image:width" content="1440">
 <meta property="og:image:height" content="900">
 <meta property="og:image:alt" content="Between Mirror showing a warmth-and-tension river across two years of a fictional couple's messages, with a report card of counted statistics beneath it.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Between Mirror — read your own archive honestly">
+<meta name="twitter:title" content="Between Mirror — with the words underneath">
 <meta name="twitter:description" content="Between Mirror turns years of messages into a private, explorable relationship history — with the words underneath every observation. Local-first, open source, no telemetry.">
 <meta name="twitter:image" content="https://between-mirror.github.io/between/media/hero-river.png">
 <!-- A page about not leaking should not leak the page you came from. -->
@@ -147,14 +147,20 @@
     <h2>What it reads today</h2>
     <p>
       <strong>Android SMS/MMS archives</strong>, exported with the <em>SMS Backup &amp; Restore</em>
-      app. That is the only input the parser understands right now.
+      app. <strong>WhatsApp</strong> exported chats — the <code>.txt</code>, or the <code>.zip</code>
+      around it — one-to-one only. And a <strong>generic CSV, JSON or JSONL</strong> file for anything
+      else you can shape into when, who, which direction, and what was said.
+    </p>
+    <p>
+      Import more than one and they merge into a single archive rather than two: the same conversation
+      seen twice converges, and each source reports its own span, so a stretch that only one format
+      covers is legible as exactly that.
     </p>
     <div class="note">
       <p>
         <strong>iPhone is not supported yet.</strong> There is no path for an iPhone backup, and
         iMessage traffic isn't in an Android SMS archive at all. If both of you were on iPhone, the
-        archive doesn't exist. iMessage and WhatsApp are the next major version, not a promise with a
-        date on it.
+        archive doesn't exist. iMessage is the next major version, not a promise with a date on it.
       </p>
     </div>
 

@@ -15,8 +15,10 @@ what you want to hear.
 
 Between tunes itself to *you* through two short human passes:
 
-1. **Hold-out labeling** — you label ~50 of your own messages (hostile? which direction? how severe? or
-   is it a joke/quote?). This sets the detector's threshold and confidence language.
+1. **Hold-out labeling** — you label ~40 of your own messages, both sides, marking what is actually
+   in the words: nothing of the kind, reaching back, brushed past, named them, a threat. This sets the
+   detector's threshold and confidence language. (What the question used to be, and why it changed,
+   is §0a.)
 2. **Episode grading** — you read ~10 of your worst fights, already pattern-read on both sides, and mark
    each read fair / overstated / understated. This confirms the power-balance gate before it may speak.
 
@@ -49,6 +51,64 @@ calibration against its own read (`server/src/lenses/bias.ts`, `computeSelfRepor
 *(Assume the gap is yours. Nearly everyone rates their own hard messages more gently than the ones
 they received — that is what makes it a bias rather than a character flaw, and it is why the check
 exists at all. Expecting to be the exception is the most reliable way to be wrong about it.)*
+
+## 0a. Rubric v2 — what the hold-out asks, and why it changed (2026-07-22)
+
+*A calibration is a measurement, and a measurement's method has to be publishable. This is the change
+note. Calibrations taken under v1 remain in force: the record carries `rubric_version`, and a v1
+calibration is not stale, not downgraded, and not silently reinterpreted — its owner answered a
+different question honestly, and their thresholds are still theirs until they choose to run it again.*
+
+**v1 asked how bad each message was** — benign, joke, mild, harsh, cruel. Three problems, in
+increasing order of how much they mattered.
+
+The first is that severity is a judgement of **intent**, and intent cannot be read off a text. "Meant
+to wound" is an inference, and asking someone to make that inference about their own messages puts
+the defensive answer and the honest answer on the same scale, indistinguishable. §0 above asks people
+to be vulnerable, and then handed them the one instrument where being defensive is invisible.
+
+The second is that severity is where two honest people disagree hardest. A therapist and a linguist
+reading the same message will not agree on "harsh" versus "mild", so the labels could not be checked
+by anyone — including the owner, later, re-reading their own answers.
+
+The third was structural and the worst of the three. **The hold-out was drawn by sorting each side by
+the model's own tension and taking the top of that list.** So the owner was shown, almost entirely,
+the messages the model already believed were hostile — and their labels were then used to decide
+whether the model's threshold was right. Selecting on the variable you are about to validate against
+leaves nothing to find: the calm messages the model may have misjudged were never on screen, and the
+one disagreement the exercise most needed to surface was the one it had made structurally impossible.
+
+**v2 changes three things.**
+
+*The question is now observable.* Five points, each a thing a reader can point at in the words:
+nothing of the kind, reaching back (an apology or a softening), brushed past, named them, a threat or
+an ultimatum. A stranger reading the same message can check the answer, which is the property the
+whole calibration needs and the property "cruel" never had. `repair` is deliberately in the list and
+deliberately not hostility — an attempt to fix something is a real, visible behaviour, not a milder
+grade of harm.
+
+*The sample is stratified and seeded.* The hold-out is drawn across the model's low, middle and high
+tension bands, per side, so the owner labels messages the model thinks are quiet as well as ones it
+thinks are loud, and the comparison can actually fail. The draw is seeded, the seed is recorded with
+the calibration, and the per-band counts are reported — so a thread with almost no calm messages
+cannot silently produce a sample that looks stratified, and any set of thresholds can be traced back
+to the exact draw that produced it.
+
+*Disagreement is shown before anything is written.* v1 went from the last label straight to persisted
+thresholds by maximizing F1 — a number that follows the owner through every later reading, chosen by
+an optimizer they never saw, over disagreements that were computed and discarded. Those
+disagreements are the most informative thing the exercise produces. They are now displayed, message
+by message, saying which way each one went; the owner can change any label; and nothing is written
+until they confirm.
+
+**What did not change: the honesty imperative.** The instruction in §0 is unchanged and is shown
+verbatim before the first message. It was the part that was working, and rewriting it alongside
+everything else would have made this change impossible to attribute.
+
+**What v2 is still not.** It does not make the calibration objective — it makes it *checkable*, which
+is a smaller and more honest claim. Two people can still disagree about whether a message brushed
+past someone. The self-report-bias check in §0 above still runs, still assumes the gap is yours, and
+is still the reason the instrument does not depend on your virtue alone.
 
 ---
 

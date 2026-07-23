@@ -62,7 +62,16 @@
     <p>
       Not yet, and there is no way to fake it: the parser has no path for an iPhone backup, and iMessage
       traffic is not in an Android SMS archive at all. If both of you used iPhones, the archive does not
-      exist. iMessage and WhatsApp are the next major version.
+      exist. iMessage is the next major version.
+    </p>
+
+    <h3>What formats does it read?</h3>
+    <p>
+      An Android <em>SMS Backup &amp; Restore</em> export, a WhatsApp exported chat (one-to-one — a
+      group threads by a set of people, which this schema cannot express, so it is refused rather than
+      approximated), and a generic CSV/JSON/JSONL file for anything else. Import several and they merge
+      into one archive; each source still reports its own span, so you can see which years rest on
+      which format.
     </p>
 
     <h3>Will it tell me who was right?</h3>
@@ -82,10 +91,11 @@
 
     <h3>Does it detect abuse?</h3>
     <p>
-      No. There is an experimental layer that describes coercive patterns in behavioural language, and
-      it is off by default, text-only, dependent on your own calibration, and <strong>not externally
-      validated</strong>. It will not be marketed as abuse detection before independent clinical review
-      — or after. If you are trying to work out whether you are safe, please talk to a person; there is
+      No. There is a research layer that describes coercive patterns in behavioural language, and it
+      is <strong>disabled in ordinary builds</strong> — there is no setting for it and the running
+      program cannot switch it on. It is text-only, dependent on your own calibration, and <strong>not
+      externally validated</strong>. It will not be marketed as abuse detection before independent
+      clinical review — or after. If you are trying to work out whether you are safe, please talk to a person; there is
       a list of confidential lines in the project's
       <a href="https://github.com/between-mirror/between/blob/main/SUPPORT.md">support document</a>.
     </p>
@@ -108,7 +118,7 @@
     <h3>Is it finished?</h3>
     <p>
       No. The deterministic instrument works end to end and is well tested. The interpretive layer is
-      experimental and gated. The installer does not exist yet.
+      a research preview, disabled in ordinary builds. The installer does not exist yet.
       <a href="https://github.com/between-mirror/between/blob/main/docs/STATUS.md">STATUS.md</a> is the
       authoritative list, including the things that are currently broken or slow.
     </p>

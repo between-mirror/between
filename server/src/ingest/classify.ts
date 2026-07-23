@@ -14,13 +14,16 @@ const VERB_TO_KIND: Record<string, ReactionKind> = {
   'Laughed at': 'laughed',
   Disliked: 'disliked',
   Questioned: 'questioned',
+  // Not a relay shape: this is what the chat.db importer writes for a sticker or emoji tapback,
+  // where the type says a reaction happened and nothing says which one.
+  'Reacted to': 'other',
 };
 
 // Anchored at start, CASE-SENSITIVE on the verb, then a space and a quoted
 // original. Accepts straight (") or curly (“ ”) quotes; the quoted body may span
 // lines and may itself contain quotes (greedy match to the final closing quote).
 const REACTION_RE =
-  /^(Liked|Loved|Emphasized|Laughed at|Disliked|Questioned) ["“][\s\S]*["”]$/;
+  /^(Liked|Loved|Emphasized|Laughed at|Disliked|Questioned|Reacted to) ["“][\s\S]*["”]$/;
 
 export function classifyReaction(bodyText: string | null): {
   isReaction: boolean;

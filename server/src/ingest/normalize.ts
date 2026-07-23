@@ -140,7 +140,12 @@ export function normalizeRecord(rec: RawRecord, ctx: NormalizeCtx): NormalizedMe
       addresses,
       contactNameHint: coerce(a.contact_name),
       attachments: [],
-      mmsMId: null,
+      // An SMS row from a phone backup has no id of its own, but an importer that emits this shape
+      // from a source that DOES — the chat.db reader, whose every message carries a guid — can pass
+      // one here. Without it, two messages that share an instant and a body are indistinguishable
+      // to the occurrence ranking and collapse into one row. That is the ordinary case for a
+      // pre-High-Sierra chat.db, whose dates have whole-second granularity.
+      mmsMId: coerce(a.native_id),
       partCount: 0,
       sourceFileId,
     };

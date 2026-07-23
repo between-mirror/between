@@ -20,7 +20,7 @@ describe('five surfaces, in arrival order', () => {
     expect(SURFACES.map((s) => s.label)).toEqual(['Home', 'Explore', 'Ask', 'Messages', 'Readings']);
   });
 
-  it('Explore carries the five old peer views as a subnav, renamed for a reader', () => {
+  it('Explore carries the old peer views as a subnav, renamed for a reader, plus archive health', () => {
     const explore = SURFACES.find((s) => s.id === 'explore')!;
     expect(explore.views.map((v) => [v.id, v.label])).toEqual([
       ['trajectory', 'Timeline'],   // was "Trajectory"
@@ -28,6 +28,7 @@ describe('five surfaces, in arrival order', () => {
       ['episodes', 'Episodes'],
       ['findings', 'Patterns'],     // was "Findings"
       ['shape', 'Rhythm'],          // was "The shape of it"
+      ['health', 'Archive health'], // what is MISSING, which every view above draws over
     ]);
   });
 
@@ -89,8 +90,8 @@ describe('keyboard navigation wraps in both directions', () => {
 
   it('steps within a subnav without leaving the surface', () => {
     expect(stepView('explore', 'trajectory', 1)).toBe('eras');
-    expect(stepView('explore', 'shape', 1)).toBe('trajectory');   // wraps
-    expect(stepView('explore', 'trajectory', -1)).toBe('shape');
+    expect(stepView('explore', 'health', 1)).toBe('trajectory');  // wraps
+    expect(stepView('explore', 'trajectory', -1)).toBe('health');
   });
 
   it('a single-view surface has nowhere to step, and says so rather than throwing', () => {

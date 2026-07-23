@@ -431,6 +431,12 @@ export interface ReflectionDTO extends ReflectionSummary {
   contentMd: string;          // the frozen prose (markdown)
   claims: ReflectionClaim[];  // claim → receipts map
   modelNote: string | null;
+  /**
+   * Set when the span this reading covers has holes in it. Computed fresh on every read rather than
+   * frozen with the prose, so a reading starts carrying the caveat the day a later import reveals a
+   * gap instead of staying confidently wrong. Null when the span is continuous.
+   */
+  spanCaveat: string | null;
 }
 
 // ── normalizers (tolerant of small server-shape variation) ───────────────────
@@ -492,6 +498,7 @@ function normalizeReflection(raw: unknown): ReflectionDTO {
     title: typeof r.title === 'string' ? r.title : null,
     contentMd: typeof r.contentMd === 'string' ? r.contentMd : '',
     modelNote: typeof r.modelNote === 'string' ? r.modelNote : null,
+    spanCaveat: typeof r.spanCaveat === 'string' && r.spanCaveat.length > 0 ? r.spanCaveat : null,
     // only claims whose receipts resolve are actionable; keep the rest for count
     claims,
   };
@@ -635,6 +642,52 @@ export function getAmbient(threadId: number, tzOffsetHours?: number, signal?: Ab
   return getJSON<AmbientStats>(`/threads/${threadId}/ambient${qs}`, signal);
 }
 
+// ── archive health ───────────────────────────────────────────────────────────
+// Mirrors server/src/lenses/archiveHealth.ts. What is IN the archive, before anything interprets it.
+
+export interface MonthCoverage {
+  month: string; total: number; me: number; them: number;
+  withAttachments: number; activeDays: number; daysInMonth: number; belowFloor: boolean;
+}
+export interface ArchiveGap {
+  fromMonth: string; toMonth: string; months: number;
+  lastBeforeMs: number | null; firstAfterMs: number | null;
+}
+export type SourceKind =
+  | 'android_smsbackup' | 'whatsapp_txt' | 'imessage_chatdb'
+  | 'imessage_backup' | 'generic_jsonl' | 'unknown';
+export interface SourceSpan {
+  kind: SourceKind;
+  firstMs: number;
+  lastMs: number;
+  messages: number;
+}
+export interface ArchiveHealth {
+  threadId: number;
+  tzOffsetHours: number;
+  source: { files: number; spans: SourceSpan[]; importedAt: string | null };
+  span: { firstMs: number; lastMs: number; months: number; activeDays: number; activeDayShare: number };
+  volume: { total: number; me: number; them: number; reactions: number; median: { perActiveDay: number; perMonth: number } };
+  months: MonthCoverage[];
+  gaps: ArchiveGap[];
+  thinMonths: string[];
+  attachments: { messages: number; smilOnly: number; lastMonthWithAny: string | null };
+  suspicions: {
+    attachmentsStopEarly: boolean; trailingCollapse: boolean;
+    endsLongBeforeImport: boolean; lopsided: boolean;
+  };
+  group: { isGroup: boolean; relatedThreads: number };
+  duplicates: { collapsed: number };
+  identity: { ambiguous: { contactId: number; identifierCount: number; messages: number }[] };
+  timezone: { offsetHours: number; assumed: boolean };
+  caution: { level: 'clear' | 'notable' | 'serious'; headline: string | null; reasons: string[] };
+}
+
+export function getArchiveHealth(threadId: number, tzOffsetHours?: number, signal?: AbortSignal): Promise<ArchiveHealth> {
+  const qs = tzOffsetHours != null ? `?tz=${tzOffsetHours}` : '';
+  return getJSON<ArchiveHealth>(`/threads/${threadId}/archive-health${qs}`, signal);
+}
+
 // ── the final insight layer (A–E) ─────────────────────────────────────────────
 export type Exit = 'met' | 'softened' | 'withdraw_notice' | 'withdraw_silent' | 'block_threat';
 export interface LedgerEntry { id: number; ms: number; date: string; dir: 'me' | 'them'; category: 'physical' | 'death_wish'; text: string }
@@ -661,24 +714,57 @@ export function getFindings(threadId: number, signal?: AbortSignal): Promise<Fin
 }
 
 // ── calibration (P2): the owner tunes the tool to themselves, honestly ────────
-export interface CalibrationStatus { calibrated: boolean; hasThresholds: boolean; hasBias: boolean; note: string }
+export interface CalibrationStatus {
+  calibrated: boolean; hasThresholds: boolean; hasBias: boolean;
+  /** 1 for a calibration taken under the old severity ladder; those stay in force. */
+  rubricVersion: number | null;
+  note: string;
+}
 export interface HoldoutItem { id: number; dir: 'ME' | 'THEM'; text: string; ms: number }
-export type OwnerLabel = 'benign' | 'joke' | 'mild' | 'harsh' | 'cruel' | 'skip';
+/** Rubric v2: what is observable in the words, rather than a judgement of how bad it was. */
+export type OwnerLabel = 'none' | 'repair' | 'dismissal' | 'name_calling' | 'threat' | 'skip';
 export interface OwnerMark { id: number; label: OwnerLabel }
+export interface HoldoutSample {
+  items: HoldoutItem[];
+  /** Recorded with the calibration, so the draw behind a set of thresholds can be reconstructed. */
+  seed: number;
+  rubricVersion: number;
+  strata: Record<'ME' | 'THEM', Record<'low' | 'mid' | 'high', number>>;
+}
 export interface SelfReportBias {
   n: number; verdict: 'self_lenient' | 'balanced' | 'self_critical' | 'insufficient'; leniencyBias: number;
   ownMeanSeverity: number; otherMeanSeverity: number; gateThresholdBump: number; note: string;
 }
-export interface CalibrationResult { bias: SelfReportBias; thresholds: { hostile_tension: number; severe_tension: number } }
+export interface Disagreement {
+  id: number; dir: 'ME' | 'THEM'; text: string; ms: number; label: OwnerLabel;
+  kind: 'model_harder' | 'owner_harder';
+}
+export interface CalibrationReview {
+  thresholds: { hostile_tension: number; severe_tension: number };
+  bias: SelfReportBias;
+  disagreements: Disagreement[];
+  rubricVersion: number;
+  seed: number | null;
+}
+export interface CalibrationResult {
+  bias: SelfReportBias;
+  thresholds: { hostile_tension: number; severe_tension: number };
+  rubricVersion: number;
+}
 
 export function getCalibrationStatus(threadId: number, signal?: AbortSignal): Promise<CalibrationStatus> {
   return getJSON<CalibrationStatus>(`/threads/${threadId}/calibration`, signal);
 }
-export function getCalibrationSample(threadId: number, n = 40, signal?: AbortSignal): Promise<HoldoutItem[]> {
-  return getJSON<HoldoutItem[]>(`/threads/${threadId}/calibration/sample?n=${n}`, signal);
+export function getCalibrationSample(threadId: number, n = 42, seed?: number, signal?: AbortSignal): Promise<HoldoutSample> {
+  const q = seed != null ? `?n=${n}&seed=${seed}` : `?n=${n}`;
+  return getJSON<HoldoutSample>(`/threads/${threadId}/calibration/sample${q}`, signal);
 }
-export function submitCalibration(threadId: number, marks: OwnerMark[], signal?: AbortSignal): Promise<CalibrationResult> {
-  return postJSON<CalibrationResult>(`/threads/${threadId}/calibrate`, { marks }, signal);
+/** Propose thresholds and surface disagreement. Writes nothing — the owner confirms first. */
+export function reviewCalibration(threadId: number, marks: OwnerMark[], seed: number | null, signal?: AbortSignal): Promise<CalibrationReview> {
+  return postJSON<CalibrationReview>(`/threads/${threadId}/calibration/review`, { marks, seed }, signal);
+}
+export function submitCalibration(threadId: number, marks: OwnerMark[], seed: number | null, signal?: AbortSignal): Promise<CalibrationResult> {
+  return postJSON<CalibrationResult>(`/threads/${threadId}/calibrate`, { marks, seed }, signal);
 }
 
 export interface EpisodeRow {

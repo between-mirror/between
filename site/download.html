@@ -81,6 +81,13 @@ npm run dev                              # → http://localhost:5273</code></pre
       copy the resulting <code>sms-….xml</code> to your computer over a cable. Nothing passes through a
       service at any point.
     </p>
+    <p>
+      A <strong>WhatsApp</strong> chat works the same way: export it from the app (one-to-one chats
+      only) and hand over the <code>.txt</code> or the <code>.zip</code>. For anything else, the
+      <strong>generic importer</strong> takes a CSV, JSON or JSONL file with a timestamp, a sender, a
+      direction and a body. Imports merge rather than stack, so a newer backup adds what is new instead
+      of duplicating what you already had.
+    </p>
 
     <h2>Official Desktop — waitlist</h2>
     <p>

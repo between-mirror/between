@@ -16,6 +16,7 @@ import {
 } from 'node:fs';
 import { join, resolve, relative, isAbsolute } from 'node:path';
 import type { BetweenDB } from '../store/db';
+import { migrationBackupsBeside } from '../store/migrate';
 import { airlockPaths } from '../airlock/paths';
 
 export interface DataPaths {
@@ -303,6 +304,14 @@ export function deleteAllData(db: BetweenDB, paths: DataPaths, confirmation: str
     for (const name of readdirSync(paths.backupsDir)) {
       try { rmSync(join(paths.backupsDir, name), { force: true, recursive: true }); backups++; files++; } catch { /* skip */ }
     }
+  }
+  // And the pre-migration copies, which are the ones that do NOT live in backupsDir: an upgrade
+  // takes a full copy of the archive and writes it beside the database. Sweeping by directory
+  // missed exactly that file, so a deletion could report "0 backups" with every message still
+  // readable in plaintext next door. Matched by the migration's own naming function, not by a
+  // pattern repeated here, and narrow by construction — nothing else in that folder is touched.
+  for (const stale of migrationBackupsBeside(paths.dbPath)) {
+    try { rmSync(stale, { force: true }); backups++; files++; } catch { /* skip */ }
   }
   const a = airlockPaths(paths.airlockDir);
   for (const d of [a.jobsDir, a.resultsDir, a.archiveDir, a.quarantineDir]) wipeDir(d);

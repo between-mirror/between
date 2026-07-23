@@ -66,6 +66,7 @@ function buildGraph(): ResolvedGraph {
       contentSha256: 'b'.repeat(64),
       importedAt: new Date(M1).toISOString(),
       recordCount: 9,
+      kind: 'android_smsbackup' as const,
     },
     contacts: [
       { tempId: OWNER, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },

@@ -136,6 +136,7 @@ function buildGraph(times: number[]): ResolvedGraph {
     sourceFile: {
       path: 'synthetic-episodes.xml', contentSha256: 'c'.repeat(64),
       importedAt: new Date(T0).toISOString(), recordCount: times.length,
+      kind: 'android_smsbackup' as const,
     },
     contacts: [
       { tempId: OWNER, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },

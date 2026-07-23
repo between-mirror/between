@@ -68,7 +68,7 @@
       <li><strong>Loopback-only.</strong> The server refuses to boot on a non-loopback host, and rejects a rebinding Host or a foreign Origin.</li>
       <li><strong>No telemetry.</strong> Zero analytics dependencies, checked in the build.</li>
       <li><strong>Server-side engine enforcement.</strong> The client cannot choose an engine outside your mode; there is no silent fallback to the test mock, which exists only under a test flag.</li>
-      <li><strong>The evidence chain.</strong> Model results are verified against the job they claim to answer, re-validated after cleaning, and every claim's receipts must resolve to real messages or the claim is dropped.</li>
+      <li><strong>The evidence chain.</strong> Model results are verified against the job they claim to answer, re-validated after cleaning, and every claim's receipts must resolve to real messages or the claim is dropped. This makes a claim <em>inspectable</em>, which is not the same as making it correct — see <a href="method.html">what a receipt is and is not</a>.</li>
       <li><strong>Immutable releases.</strong> A version identifies one tree forever. Corrections are a new patch version; tags never move.</li>
     </ul>
 

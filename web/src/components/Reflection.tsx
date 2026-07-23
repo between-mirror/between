@@ -175,6 +175,14 @@ export function Reflection({ reflection, displayName, onOpenReceipt }: Reflectio
           {VOICE_INTERIM.oneReadingDatedTemplate.replace('{date}', generatedDate(reflection.generatedAt))}
           {' · '}{displayName}
         </p>
+        <p className="reflection-caveat">{VOICE_INTERIM.receiptsAreNotProof}</p>
+        {/* A reading is where an absence does the most damage: prose closes a gap that a chart at
+            least leaves visibly empty, and three missing months become "a quieter season" in a
+            sentence that reads perfectly well. So it is said here, above the prose, not only in a
+            report the reader would have to go and open. */}
+        {reflection.spanCaveat && (
+          <p className="reflection-span-caveat">{reflection.spanCaveat}</p>
+        )}
       </header>
 
       <div className="reflection-body">

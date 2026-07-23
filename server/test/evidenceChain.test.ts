@@ -44,7 +44,7 @@ function buildGraph(n: number): ResolvedGraph {
     messages.push(msg(dir, BASE + i * 60_000, `A note about our week together, number ${i}.`));
   }
   return {
-    sourceFile: { path: 'syn.xml', contentSha256: 'e'.repeat(64), importedAt: new Date(BASE).toISOString(), recordCount: n },
+    sourceFile: { path: 'syn.xml', contentSha256: 'e'.repeat(64), importedAt: new Date(BASE).toISOString(), recordCount: n, kind: 'android_smsbackup' },
     contacts: [
       { tempId: OWNER, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },
       { tempId: THEM, displayName: 'Robin', primaryE164: '+15555550123', isOwner: false, relationshipType: 'partner' },

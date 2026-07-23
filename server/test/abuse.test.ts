@@ -10,6 +10,7 @@ import { countCoercive, powerBalanceGate, buildEraAggregates, getL4ByEpisode, ma
 import { openDb } from '../src/store/db';
 import type { BetweenDB } from '../src/store/db';
 import { seedThread } from './helpers/seed';
+import { enableResearchLayer, withdrawResearchConsent, clearResearchFlag } from './helpers/research';
 import { refreshEpisodes, getEpisodes } from '../src/lenses/episodes';
 import { refreshEras } from '../src/lenses/eras';
 import { createAirlockStore } from '../src/airlock/store';
@@ -83,7 +84,7 @@ describe('T-L4 aggregation (DB)', () => {
   beforeAll(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'between-l4agg-'));
     db = openDb(join(tmpDir, 'test.db'));
-    db.setMeta('experimental_lenses', '1'); // the L4 layer is experimental; opt in to exercise it
+    enableResearchLayer(db); // the L4 layer is a research preview; open both doors to exercise it
     const T0 = Date.UTC(2024, 5, 1, 12);
     const ids = seedThread(db, [
       { dir: 'incoming', ms: T0, tension: 3, body: 'get out of my house' },
@@ -108,7 +109,7 @@ describe('T-L4 aggregation (DB)', () => {
     });
   });
 
-  afterAll(() => { db.close(); rmSync(tmpDir, { recursive: true, force: true }); });
+  afterAll(() => { clearResearchFlag(); db.close(); rmSync(tmpDir, { recursive: true, force: true }); });
 
   it('maps the l4 result to its episode by membership (not min id)', () => {
     const m = getL4ByEpisode(db, 1);
@@ -132,7 +133,7 @@ describe('T-L4 runtime hard stop', () => {
   beforeAll(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'between-l4hs-'));
     db = openDb(join(tmpDir, 'test.db'));
-    db.setMeta('experimental_lenses', '1'); // opt into the experimental layer; the OFF case is tested separately
+    enableResearchLayer(db); // the OFF case is tested separately
     const T0 = Date.UTC(2024, 5, 1, 12);
     // one episode, unambiguously them: five severe incoming, them-initiated, with coercive markers
     const ids = seedThread(db, [
@@ -157,7 +158,7 @@ describe('T-L4 runtime hard stop', () => {
       validation: { schema_ok: true, retries: 0 }, refusal: { detected: false, reason: null }, modelNote: 'test', sampleCount: 1,
     });
   });
-  afterAll(() => { db.close(); rmSync(tmpDir, { recursive: true, force: true }); });
+  afterAll(() => { clearResearchFlag(); db.close(); rmSync(tmpDir, { recursive: true, force: true }); });
 
   it('the RAW gate trips to support(them) on this fixture — establishing the baseline', () => {
     expect(powerBalanceGate(buildEraAggregates(db, 1)).stance).toMatchObject({ direction: 'them', frame: 'support' });
@@ -183,14 +184,14 @@ describe('T-L4 runtime hard stop', () => {
   // P1-11: even fully calibrated AND on the strongest support fixture, the experimental layer OFF means
   // NO support frame ever escapes — the whole point of gating the interpretive layer by default.
   it('with experimental_lenses OFF, no support frame escapes even when calibrated', () => {
-    db.setMeta('experimental_lenses', '0'); // owner has NOT opted in
+    withdrawResearchConsent(db); // this archive has NOT been acknowledged
     const g = gateFor(db, 1);
     expect(g.stance.frame).toBe('two_readings');
     expect(g.stance.experimental).toBe(false);
     expect(g.eras.every((e) => e.frame === 'two_readings')).toBe(true);
     // and the L4 stage-2 refuses entirely
-    expect(() => materializeL4Jobs(db, 1, tmpDir, getEpisodes(db, 1))).toThrow(/experimental/i);
-    db.setMeta('experimental_lenses', '1'); // restore for any later assertions
+    expect(() => materializeL4Jobs(db, 1, tmpDir, getEpisodes(db, 1))).toThrow(/research preview/i);
+    enableResearchLayer(db); // restore for any later assertions
   });
 
   it('the full L4 drain refuses until the sample-and-agree pass is recorded', () => {

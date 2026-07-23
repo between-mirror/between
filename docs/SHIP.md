@@ -11,10 +11,10 @@ non-negotiables live in [PRIVACY-INVARIANTS.md](PRIVACY-INVARIANTS.md); the pack
 > actions stay written here and are filed to the bus the moment they become the actual next blocker.
 > No markdown document in this repo maintains a human task list.
 
-> **Shipped: v0.2.0 — "the hardening release" (2026-07-20)**, then **v0.2.1 — "the truth patch"
-> (2026-07-21)**. Both published to `between-mirror/between` `main` + an immutable tag via
-> `scripts/publish-release.ps1` (the only sanctioned public-update path; the name sweep and the
-> DECISIONS/FABLE assert passed on each). See `CHANGELOG.md` and `docs/STATUS.md`.
+> **Shipped through v0.4.1.** Every public version reached `between-mirror/between` `main` plus an
+> immutable tag through `scripts/publish-release.ps1`, the only sanctioned public-update path.
+> **v0.5.0 is not published:** its release gate was demonstrated on 2026-07-22, and the remaining
+> publish command is the owner's act (task #194). See `CHANGELOG.md` and `docs/STATUS.md`.
 > **Announcements remain Michael's act** (task bus #181) — nothing has been announced anywhere.
 >
 > **Where the July-2026 adversarial review actually stands.** The earlier wording here said the review
@@ -29,12 +29,11 @@ non-negotiables live in [PRIVACY-INVARIANTS.md](PRIVACY-INVARIANTS.md); the pack
 >    is tool-level only (restricted tools, staged temp folder, MCP/hooks off). A real OS boundary
 >    arrives with the packaged app in Era 3 and not before; until then the claim is "tool-contained,"
 >    never "sandboxed." At-rest encryption is likewise deferred, with the reason published.
-> 3. **Newly tracked — found after the review closed** (the 2026-07-21 productization review).
->    Fixed in v0.2.1: the release script force-moved tags, so one version could mean two different
->    trees. Still open, targeted at v0.3.0: Windows CI was removed rather than repaired; connective
->    prose (bridges, closing questions) is still model-authored and therefore unreceipted; thread-level
->    model coverage is computed but does not gate the surface that displays it. Open beyond v0.3.0: the
->    trademark search, and Era 5's external clinician validation — which is external by design.
+> 3. **Newly tracked — found after the review closed.** The defects found through the v0.5.0
+>    productization and re-review rounds are fixed and recorded in `POSTMORTEMS.md`, with regressions.
+>    The v0.5.0 confirmation found zero confirmed P0s. What remains open is stated in STATUS: the
+>    method's evidence limits, honest importer/archive-health limits, the trademark search, the
+>    contributor-rights decision, and Era 5's external clinician validation.
 >
 > A review is a snapshot, not a certificate. The standing doctrine holds: **a claim may only be as
 > strong as its enforcement.**
@@ -105,7 +104,7 @@ technical one.
 final. Note the collision diligence: VCNC's *"Between — Private Couples App"* (between.us) is a live,
 actively-maintained couples messenger in the adjacent category. Consequences: do **not** name the org
 `between-app` or anything reading as "the Between app"; pick a disambiguating org (the repo itself can
-stay `between`), let the tagline carry discovery ("Between — read your own archive honestly"), accept
+stay `between`), let the tagline carry discovery ("Between Mirror — with the words underneath"), accept
 that the "between app" search term is theirs, and take a real trademark look before the paid installer
 ships under the name. For an AGPL project off the app stores, the risk is otherwise low.
 
@@ -138,8 +137,10 @@ clone fresh on another machine or directory, `npm install`, `npm test`, and run 
 makes the standalone word commercially unsafe; a professional trademark search precedes any payment
 collection). Positioning: *"Between Mirror turns years of messages into a private, explorable
 relationship history — with the words underneath every observation."* For people with an Android
-SMS/MMS archive (say so precisely until more importers exist). Never: AI therapist, relationship
-judge, abuse detector, evidence generator, or couples app.
+SMS/MMS archive, a WhatsApp export, or anything they can shape into the generic importer's format —
+named precisely, one at a time, and widened only as each one ships with its tests. iMessage is the
+line that has not moved. Never: AI therapist, relationship judge, abuse detector, evidence generator,
+or couples app.
 
 **The launch kit gates all promotion:** a real landing page (GitHub Pages: /, /demo, /download,
 /privacy, /security, /method, /pricing, /faq), a **browser-accessible read-only interactive demo**

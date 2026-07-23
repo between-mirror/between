@@ -19,7 +19,7 @@ export type SurfaceId = 'home' | 'explore' | 'ask' | 'messages' | 'readings';
 
 export type ViewId =
   | 'overview'
-  | 'trajectory' | 'eras' | 'episodes' | 'findings' | 'shape'
+  | 'trajectory' | 'eras' | 'episodes' | 'findings' | 'shape' | 'health'
   | 'ask'
   | 'transcript'
   | 'readings' | 'session';
@@ -50,6 +50,11 @@ export const SURFACES: readonly NavSurface[] = [
       { id: 'episodes', label: 'Episodes' },
       { id: 'findings', label: 'Patterns' },
       { id: 'shape', label: 'Rhythm' },
+      // Last in the list and first in importance. Every view above draws a line through whatever is
+      // in the archive; this one says how much of the archive is missing. A calm stretch caused by a
+      // conversation that moved to another app is the most convincing wrong answer this software can
+      // give, and the only defence is showing the holes as plainly as the trends.
+      { id: 'health', label: 'Archive health' },
     ],
   },
   { id: 'ask', label: 'Ask', views: [{ id: 'ask', label: 'Ask' }] },

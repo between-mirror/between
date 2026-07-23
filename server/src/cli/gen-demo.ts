@@ -363,6 +363,7 @@ function seedGraph(db: BetweenDB, all: Authored[]): number[] {
       contentSha256: 'demo'.padEnd(64, '0'),
       importedAt: new Date(t0).toISOString(),
       recordCount: all.length,
+      kind: 'android_smsbackup' as const,
     },
     contacts: [
       { tempId: OWNER, displayName: 'Alex', primaryE164: `+1${AREA}${PREFIX}${OWNER_LINE}`, isOwner: true, relationshipType: 'unknown' },

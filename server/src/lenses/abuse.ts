@@ -220,12 +220,14 @@ export function episodeTranscript(db: BetweenDB, e: EpisodeRow): { transcript: s
  *  must not run until the owner has done the sample-and-agree pass — otherwise the gate could speak a
  *  support frame the owner never checked. A subset (the sample itself, or a targeted re-run) is allowed. */
 export function materializeL4Jobs(db: BetweenDB, threadId: number, airlockDir: string, episodes?: EpisodeRow[]): string[] {
-  // EXPERIMENTAL GATE (P1-11): stage-2 abuse-pattern detection is part of the experimental interpretive
-  // layer. It does not run at all until the owner opts in — no sample, no full drain.
+  // RESEARCH GATE (P1-11): stage-2 abuse-pattern detection is part of the interpretive layer. It does
+  // not run at all unless research mode is switched on out of band AND this archive has been
+  // acknowledged — no sample, no full drain.
   if (!experimentalLensesEnabled(db)) {
     throw new Error(
-      `L4 stage-2 is off: the abuse-pattern layer is experimental (text-only, not externally validated) and `
-      + `off by default. Enable experimental_lenses in Settings first.`,
+      `L4 stage-2 is off: the abuse-pattern layer is a research preview (text-only, not externally `
+      + `validated), disabled in ordinary builds. There is no setting for it — activation is `
+      + `documented for evaluators in docs/STATUS.md.`,
     );
   }
   if (episodes === undefined && !isL4SampleConfirmed(db, threadId)) {

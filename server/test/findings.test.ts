@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { openDb } from '../src/store/db';
 import type { BetweenDB } from '../src/store/db';
 import { seedThread } from './helpers/seed';
+import { enableResearchLayer, withdrawResearchConsent, clearResearchFlag } from './helpers/research';
 import { refreshEpisodes } from '../src/lenses/episodes';
 import { refreshEras } from '../src/lenses/eras';
 import { computeLedger, computeKidsFraming, computeExitSignature, computeApologyEconomics, computeWearingDown, buildFindingsMaterial } from '../src/lenses/findings';
@@ -21,7 +22,7 @@ let db: BetweenDB;
 beforeAll(() => {
   tmpDir = mkdtempSync(join(tmpdir(), 'between-find-'));
   db = openDb(join(tmpDir, 'test.db'));
-  db.setMeta('experimental_lenses', '1'); // the findings READING is experimental; opt in to exercise it
+  enableResearchLayer(db); // the findings READING is a research preview; open both doors to exercise it
   seedThread(db, [
     { dir: 'incoming', ms: T0, tension: 3, body: 'go kill yourself' },                        // death_wish · them
     { dir: 'incoming', ms: T0 + M, tension: 2, body: 'you never help with our kids' },         // our-kids · them
@@ -36,7 +37,7 @@ beforeAll(() => {
   refreshEras(db, 1);
 });
 
-afterAll(() => { db.close(); rmSync(tmpDir, { recursive: true, force: true }); });
+afterAll(() => { clearResearchFlag(); db.close(); rmSync(tmpDir, { recursive: true, force: true }); });
 
 describe('T-FINDINGS', () => {
   it('A — the ledger of hands catches death-wishes and physical disclosures by side', () => {
@@ -100,16 +101,18 @@ describe('T-FINDINGS', () => {
     expect(row.content_md).not.toContain('She said the unsayable');
   });
 
-  it('P1-11 — with the experimental layer OFF, the findings reading declines (counts stay available)', () => {
-    db.setMeta('experimental_lenses', '0');
+  it('P1-11 — with the research layer OFF, the findings reading declines (counts stay available)', () => {
+    withdrawResearchConsent(db);
     const { receiptIds, span } = buildFindingsMaterial(db, 1);
     const render = { title: 'The findings', blocks: [{ kind: 'observation', text: 'A directional claim.', evidence_ids: [`m${receiptIds[0]}`] }] };
     const out = finalizeFindingsReading(db, 1, render as any, receiptIds, span, '2026-07-12');
     const row = db.raw.prepare('SELECT content_md FROM reflections WHERE id = ?').get(out.reflectionId) as { content_md: string };
     expect(row.content_md).not.toContain('A directional claim');
-    expect(row.content_md.toLowerCase()).toContain('experimental');
+    expect(row.content_md.toLowerCase()).toContain('research preview');
+    // The decline must not send the reader looking for a switch that does not exist.
+    expect(row.content_md.toLowerCase()).not.toMatch(/in settings/);
     // the deterministic A–E counts are unaffected by the gate
     expect(computeLedger(db, 1).byDir.death_wish.them).toBe(1);
-    db.setMeta('experimental_lenses', '1');
+    enableResearchLayer(db);
   });
 });

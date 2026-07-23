@@ -100,6 +100,10 @@ async function main(): Promise<void> {
       `/api/threads/${id}/trajectory`,
       `/api/threads/${id}/ambient`,
       `/api/threads/${id}/episodes`,
+      // Archive health is the last Explore tab and the most important one — it is what says
+      // whether to believe the others. Without it frozen here, the one view about missing data is
+      // itself missing from the demo.
+      `/api/threads/${id}/archive-health`,
     );
   }
   for (const id of episodeIds) urls.push(`/api/episodes/${id}`);

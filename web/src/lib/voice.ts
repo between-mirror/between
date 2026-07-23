@@ -52,7 +52,24 @@ export const VOICE = {
   // ── Calibration (P2 — hold-out labeling; honesty is load-bearing, VOICE §6 verbatim) ──
   calibrationIntro:
     "This tunes the reading to you — and it only works if you're honest, especially about your own hardest messages. Score your words as harshly as you'd score the same words from them. A gentle-on-yourself calibration produces a comforting, wrong answer.",
+  /** Rubric v1, superseded by calibrationItemHintV2. Kept because v1 calibrations remain in force. */
   calibrationItemHint: "Whose is this — and how does it actually land, not how you'd defend it?",
+
+  // ── Calibration rubric v2 (VOICE §6, verbatim) ────────────────────────────
+  // v1 asked how bad a message was, which is a judgement of intent — the axis where a defensive
+  // labeller has the most room. v2 asks what is visible in the words. The honesty imperative above
+  // is unchanged: it was the part that worked.
+  calibrationItemHintV2: 'What is actually in these words? Not how you meant it — what it says.',
+  calibrationSkip: "Can't tell (s)",
+  calibrationReviewHeader: 'Where the reading and you disagree',
+  calibrationReviewIntro:
+    'On these, the tool read your archive differently than you did. Nothing is settled until you '
+    + 'say so — look at them, and change any label you want to change.',
+  calibrationReviewModelHarder: 'The tool called this a hard message. You didn’t.',
+  calibrationReviewOwnerHarder: 'You called this a hard message. The tool didn’t.',
+  calibrationReviewConfirm: 'These are right — save my calibration',
+  calibrationReviewAdjust: 'Let me change some',
+  calibrationReviewNone: 'The tool read every one of these the same way you did. Nothing to reconsider.',
   calibrationBiasLenient:
     "You marked your own hard messages more gently than your partner's. That's the common human tilt — so this reading leans on the model's own eyes, not just your labels, and holds the frame more neutral.",
   calibrationBiasClean: 'Your calibration weighed both sides evenly. Read the reading as one perspective to review, not a verdict.',
@@ -106,6 +123,13 @@ export const VOICE_INTERIM = {
   askForReading: 'Write a first reading',
   // Reflection framing line (composed around the frozen letter).
   oneReadingDatedTemplate: 'one reading · generated on {date}',
+  // The standing caveat under every reading. A receipt makes a claim inspectable, not correct — the
+  // evidence contract stops invention, it cannot stop a true message being cherry-picked, a joke
+  // being read flat, or three examples standing in for years. Said here, where someone is actually
+  // reading the interpretation, rather than only in a document they will never open.
+  receiptsAreNotProof:
+    'Open any line to see the messages it rests on. Those messages show where the observation came '
+    + 'from — not that it is the only fair reading of them. You were there and this was not.',
   // Drain mechanics — honest that the reading is on-demand, never automatic.
   drainOnDemand: 'The reading happens when you run the drain. It never runs on its own.',
   checkForReadings: 'Check for new readings',

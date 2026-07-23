@@ -1,5 +1,96 @@
 # Changelog
 
+## v0.5.0 (2026-07-22) — A second backup used to crash, and that was the least of it
+
+This release is mostly about the archive being *more than one file*: more than one import, more than
+one format, more than one spelling of the same person. That turned out to be where nearly everything
+was broken, and none of it was visible from a single clean import.
+
+**Importing a second backup crashed on v0.4.1.** `UNIQUE constraint failed:
+threads.participant_signature` — shipped, and the entire premise of "since you last looked". Threads
+and contacts are now keyed on the participants' own identifiers rather than on the numbers a file
+happened to hand out, and the dedup key is source-neutral, so the same conversation seen twice
+converges while two messages that share a minute and a word stay two.
+
+**New: three more ways in.** WhatsApp exported chats (`.txt`/`.zip`, one-to-one) and a generic
+CSV/JSON/JSONL importer for anything reducible to when / who / which direction / what. A fourth —
+the iMessage Mac `chat.db` — is built and tested but **deliberately not claimed**: every fixture
+behind it was written here, because the only real `chat.db` files in existence are somebody's own
+messages. It is reachable behind `--importers-beta` and joins the supported list when two volunteers
+have read real archives with it cleanly, and not before.
+
+**New: archive health, and it no longer waits to be opened.** A beautiful calm caused by missing data
+is the most dangerous thing this product can show, so the report that quantifies what is missing —
+spans, discontinuities, a suspected SMS→iMessage migration, attachment coverage, duplicates,
+identity ambiguity — now escalates quietly on Home, and any reading whose span contains a gap says
+so in its own header. "What percentage of the relationship is here" is not answered, because it is
+not knowable; what the archive can and cannot see is.
+
+**Calibration v2.** The hold-out now asks what is *observable* in the words rather than how bad a
+message was, samples across the model's own low/mid/high tension bands instead of only the messages
+it already called hostile, seeds the draw so any set of thresholds can be traced to the sample behind
+it, and shows the owner every disagreement **before** anything is saved. v1 drew the messages the
+model called hostile and then used those labels to validate the model's threshold; it also picked
+thresholds by maximising F1 over disagreements nobody was ever shown.
+
+**The interpretive layer has no switch, because it never had one.** This file previously said it was
+turned on via Settings with sober consent, describing a control that had never been built, while the
+actual path was an HTTP call the app could make on its own behalf. Both are gone; a test asserts the
+route does not exist. It is not removed — an external reviewer cannot evaluate what they cannot run —
+so research activation is documented, deliberately awkward, and takes two separate acts.
+
+### The re-review, which found more than the release did
+
+Every minor goes through an adversarial re-review before it ships: finders aimed at what the change
+could break, three refuting skeptics per finding. This one ran 128 agents over the diff — 40
+candidates, 24 reports survived refutation, and those reports describe nine distinct P0s — and then a
+second pass over the fixes found three of those nine still open, recorded as fixed. The full record
+is in
+[POSTMORTEMS.md](docs/POSTMORTEMS.md). The ones a user would have felt:
+
+- **An upgrade could take the archive away.** Recomputing dedup keys collided on a UNIQUE column, and
+  the migration runs inside the only door into the store — so the archive became permanently
+  unopenable by the app and every CLI, with no repair path. The trigger was ordinary: two photos sent
+  in the same second. A comment in that file asserted this could not happen; it had been false since
+  the day it was written. Both rewrites are now collision-safe by construction rather than by
+  argument, and nothing may abort in there.
+- **"Delete everything" left a complete unencrypted copy of the archive on disk**, because the
+  migration writes its backup beside the database and the deletion sweep enumerates every folder
+  except that one. The panel reported "0 backups" while every message sat readable next door.
+- **Real messages were being destroyed and counted as unreadable.** The iMessage decoder skipped
+  metadata with a prefix rule that also matched *NSFW*, *NSW next week?*, *NSA is at it again*.
+- **Two strangers could become one relationship.** A generic export that names nobody used the same
+  two synthetic identities as every other such file, so two people's exports merged into one thread
+  split by direction. Scoped to the file now — with the limitation stated in STATUS rather than
+  hidden.
+- **The same person, written two ways, became two people** — while the thread merged anyway, so a
+  1:1 conversation rendered as "Alice, Alice" and marking them a partner labelled half of them.
+- **Who the archive belongs to** was recomputed per file, so importing one conversation and then the
+  full backup forked the thread and invented a group chat that never existed.
+- **A calibration with no hostile labels chose the strictest threshold available**, then reported
+  "calibrated to you": the person who reported the least hostility got the reading with the most.
+- **The iMessage importer could not have read any real file** — it scanned participants across the
+  whole database, so every real archive looked like a group chat and was refused, saying so as the
+  reason.
+
+A later narrow verification of the final identity fix found two more P0s before the confirmation
+review was launched. The owner-only participant key used a plain-text `self:` prefix that a generic
+source identifier could reproduce, allowing an ordinary conversation to share a thread and dedup
+space with a note-to-self thread. Participant roles are now structurally encoded and the migration,
+repair and ingest paths use the same representation. A partial backup from a second handset could
+also miss that handset's owner when its only evidence was one incoming one-to-one MMS; importing the
+full backup later then changed the participant set, forked the conversation and duplicated the
+overlap. A sole incoming recipient is now direct owner evidence. Both failures have regressions for
+the adversarial values and both partial/full import orders.
+
+The final confirmation re-read every earlier round before attacking the complete release tail
+locally, with no external agent fan-out or paid API calls. It found zero confirmed P0s. It also added
+the two regressions the tail still lacked: Android's real owner-placeholder shape in both partial/full
+orders, and a v0.4.1-style owner-only thread surviving migration and re-import without a fork or a
+doubled row. The release gate is demonstrated; publication remains the owner's separate act.
+
+Nothing here was reported by a user. All of it was found by attacking this project's own claims.
+
 ## v0.4.1 — The guard was carrying the secret
 
 The check written to stop the archive statistics being published **contained them**, hardcoded, each
@@ -76,8 +167,8 @@ watching them. Budgets now sit where the time actually goes, asserted against bo
 generated 50,000-message archive.
 
 **One thing published that should not have been.** The first export of the "Your data" panel carried
-`I:\claude\between\examples\demo.db` — the maintainer's drive letter and directory layout, headed for
-a public page about privacy. The export truthfully reports where files live, which is correct in the
+the maintainer's own drive letter and directory layout — an absolute local path to the example
+database — headed for a public page about privacy. The export truthfully reports where files live, which is correct in the
 application and wrong on a website. Paths are now redacted to a generic home, keeping everything below
 the repo root so the panel still reads like a real install.
 

@@ -32,15 +32,40 @@ const num = (v: unknown, d: number): number => (typeof v === 'number' && Number.
  *  defence is inert — so anything directional (the power-balance gate, the findings framing) must be
  *  surfaced as PROVISIONAL, never as a conclusion tuned to them. This is the load-bearing guard for a
  *  next owner who is less introspective than the tool's author. */
-export interface CalibrationStatus { calibrated: boolean; hasThresholds: boolean; hasBias: boolean; note: string }
+export interface CalibrationStatus {
+  calibrated: boolean;
+  hasThresholds: boolean;
+  hasBias: boolean;
+  /**
+   * Which rubric the stored calibration was taken under. A record written before rubric v2 existed
+   * carries no version and reads as 1 — it is not stale and does not need redoing. The owner
+   * answered a different question honestly, their thresholds are still theirs, and the only thing
+   * that would be dishonest is to relabel their answers as if they had been given under v2.
+   */
+  rubricVersion: number | null;
+  note: string;
+}
+
 export function calibrationStatus(db: BetweenDB): CalibrationStatus {
-  const hasThresholds = !!db.getMeta('calibration');
+  const raw = db.getMeta('calibration');
+  const hasThresholds = !!raw;
   const hasBias = !!db.getMeta('self_report_bias');
   const calibrated = hasThresholds && hasBias;
+
+  let rubricVersion: number | null = null;
+  if (raw) {
+    try {
+      const o = JSON.parse(raw) as Record<string, unknown>;
+      rubricVersion = num(o.rubric_version, 1);
+    } catch { rubricVersion = 1; }
+  }
+
   const note = calibrated
-    ? 'Calibrated to you: thresholds and a self-report honesty check are on file.'
+    ? rubricVersion !== null && rubricVersion < 2
+      ? 'Calibrated to you: thresholds and a self-report honesty check are on file, taken under the earlier rubric. Still yours, still in force — re-run it only if you want to.'
+      : 'Calibrated to you: thresholds and a self-report honesty check are on file.'
     : 'NOT yet calibrated to you — running on shipped defaults tuned to a different person. Read any direction as provisional until you complete the calibration session.';
-  return { calibrated, hasThresholds, hasBias, note };
+  return { calibrated, hasThresholds, hasBias, rubricVersion, note };
 }
 
 /** Read the owner's calibration from app_meta ('calibration' JSON), merged over the shipped defaults.

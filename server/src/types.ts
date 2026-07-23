@@ -6,10 +6,29 @@ export type Direction = 'incoming' | 'outgoing' | 'draft' | 'other';
 export type MsgKind = 'sms' | 'mms';
 export type AddrRole = 'from' | 'to' | 'cc' | 'bcc';
 export type ReactionKind =
-  | 'liked' | 'loved' | 'emphasized' | 'laughed' | 'disliked' | 'questioned';
+  // 'other' is a reaction whose sentiment is not recoverable: iMessage's sticker and any-emoji
+  // tapbacks say only THAT someone reacted, and inventing one of the six named kinds for them
+  // would be a reading of feeling that nothing in the archive supports.
+  | 'liked' | 'loved' | 'emphasized' | 'laughed' | 'disliked' | 'questioned' | 'other';
 export type RelationshipType =
   | 'partner' | 'family' | 'parent_child' | 'friend' | 'coworker' | 'unknown';
 export type IdentifierKind = 'mobile' | 'shortcode' | 'email' | 'alias';
+
+/**
+ * Which export a row came from. Recorded per source file AND denormalized onto every message, so a
+ * thread assembled from two formats can report each one's span without a join.
+ *
+ * `unknown` is reachable only by migration: it marks rows imported before Between recorded this,
+ * whose format could not be derived from the path it kept. No ingest path may write it — an import
+ * that cannot name its own format is a bug, not a category.
+ */
+export type SourceKind =
+  | 'android_smsbackup'
+  | 'whatsapp_txt'
+  | 'imessage_chatdb'
+  | 'imessage_backup'
+  | 'generic_jsonl'
+  | 'unknown';
 
 // ── raw parse output (strings straight from XML; "null" not yet coerced) ─────
 export interface RawSms {
@@ -65,6 +84,13 @@ export interface NormalizedMessage {
 // ── identity resolution output ──────────────────────────────────────────────
 export interface ResolvedContact {
   tempId: number;
+  /**
+   * The cluster's natural key — E.164 when it resolved, else the raw address. Stable across files,
+   * which tempId is not: tempIds are handed out in first-encounter order, so the same two people
+   * are numbered differently by two backups of the same phone. Anything that has to survive a
+   * second import (thread signatures, dedup keys, contact merges) keys on this.
+   */
+  key: string;
   displayName: string | null;
   primaryE164: string | null;
   isOwner: boolean;
@@ -91,8 +117,11 @@ export interface GraphSourceFile {
   contentSha256: string;
   importedAt: string; // ISO
   recordCount: number;
+  kind: SourceKind;
 }
-export interface GraphContact extends ResolvedContact {
+// `key` is identity-resolution's business — it is what the thread signature is built from before
+// the graph is assembled, and nothing downstream of that reads it back.
+export interface GraphContact extends Omit<ResolvedContact, 'key'> {
   relationshipType: RelationshipType;
 }
 export interface GraphThread {
@@ -133,6 +162,14 @@ export interface GraphMessage {
   recipients: GraphRecipient[];
   attachments: NormalizedAttachment[];
 }
+
+/** Per-source span within one thread — the honest unit of coverage once formats mix. */
+export interface SourceSpan {
+  kind: SourceKind;
+  firstMs: number;
+  lastMs: number;
+  messages: number;
+}
 export interface ResolvedGraph {
   sourceFile: GraphSourceFile;
   contacts: GraphContact[];
@@ -158,6 +195,15 @@ export interface IngestResult {
   contacts: number;
   threads: number;
   durationMs: number;
+  /**
+   * Rows the importer could not read, and why — never silently discarded.
+   *
+   * The generic importer refuses a row with an unreadable date rather than guessing at it, which is
+   * right; it counted those and described them, and the caller threw the report away. A file that
+   * imports short with nothing saying so is the quiet version of this product's worst failure.
+   */
+  unreadableRows?: number;
+  unreadableWhy?: string[];
 }
 
 // ── API DTOs (read side) ────────────────────────────────────────────────────

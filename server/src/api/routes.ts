@@ -16,15 +16,19 @@ import { defaultAirlockDir } from '../airlock/paths';
 import { drainCompleteCopy } from '../airlock/voice';
 import { getEmotionDaily, refreshEmotionDaily, hasEmotionDaily, emotionCoverage } from '../lenses/l1';
 import { getTimezone, setTimezone, isValidTimeZone } from '../lib/localtime';
-import { experimentalLensesEnabled, setExperimentalLenses } from '../lenses/experimental';
+import { experimentalLensesEnabled } from '../lenses/experimental';
 import { cloudSyncWarning } from '../lib/atRest';
 import { runFirstReflection } from '../lenses/firstReflection';
 import { computeTrajectory } from '../lenses/trajectory';
 import { planAsk } from '../lenses/ask';
 import { computeAmbient } from '../lenses/ambient';
+import { computeArchiveHealth, spanDiscontinuity } from '../lenses/archiveHealth';
+import { buildDiagnosticBundle } from '../lib/diagnostics';
 import { getFindings, refreshFindings } from '../lenses/findings';
 import { calibrationStatus } from '../lenses/calibration';
-import { applyCalibration, sampleHoldout, biasLabelsFromMarks, type OwnerMark } from '../lenses/calibrate';
+import {
+  applyCalibration, sampleHoldout, biasLabelsFromMarks, reviewCalibration, type OwnerMark,
+} from '../lenses/calibrate';
 import { selectSampleEpisodes, isL4SampleConfirmed, recordL4SampleConfirmed } from '../lenses/abuse';
 import { getEngineMode, setEngineMode, paidBatchAllowed, allowedEngines, mockAllowed, type EngineMode } from '../lenses/engineMode';
 import { estimateReadCost } from '../lenses/readCost';
@@ -373,8 +377,25 @@ export async function routes(app: FastifyInstance, opts: RoutesOptions): Promise
   app.get('/api/threads/:id/calibration/sample', async (request, reply) => {
     const id = requireThread(request, reply);
     if (id == null) return;
-    const n = toInt((request.query as { n?: string }).n) ?? 40;
-    return sampleHoldout(db, id, Math.max(10, Math.min(80, n)));
+    const q = request.query as { n?: string; seed?: string };
+    const n = toInt(q.n) ?? 42;
+    // Stratified across the model's own low/mid/high tension bands, per side, from a seed that is
+    // recorded — so the draw behind a set of thresholds can be reconstructed exactly.
+    return sampleHoldout(db, id, Math.max(10, Math.min(80, n)), toInt(q.seed) ?? undefined);
+  });
+
+  // Propose thresholds and show where the model disagreed — WITHOUT writing anything. The owner
+  // confirms or goes back and adjusts; nothing about their own words is decided by an optimizer
+  // they never saw.
+  app.post('/api/threads/:id/calibration/review', async (request, reply) => {
+    const id = requireThread(request, reply);
+    if (id == null) return;
+    const body = request.body as { marks?: unknown; seed?: unknown };
+    if (!Array.isArray(body?.marks) || body.marks.length === 0) {
+      reply.status(400).send({ error: 'body.marks (owner {id,label}[]) required, non-empty' });
+      return;
+    }
+    return reviewCalibration(db, id, body.marks as OwnerMark[], toInt(body.seed) ?? null);
   });
 
   // Apply the owner's blind marks (P2): rejoin each to the model's tension server-side, derive the
@@ -382,12 +403,13 @@ export async function routes(app: FastifyInstance, opts: RoutesOptions): Promise
   app.post('/api/threads/:id/calibrate', async (request, reply) => {
     const id = requireThread(request, reply);
     if (id == null) return;
-    const body = request.body as { marks?: unknown; labels?: unknown };
+    const body = request.body as { marks?: unknown; labels?: unknown; seed?: unknown };
+    const seed = toInt(body?.seed) ?? null;
     if (Array.isArray(body?.marks) && body.marks.length) {
-      return applyCalibration(db, biasLabelsFromMarks(db, id, body.marks as OwnerMark[]));
+      return applyCalibration(db, biasLabelsFromMarks(db, id, body.marks as OwnerMark[]), { seed });
     }
     if (Array.isArray(body?.labels) && body.labels.length) {   // direct BiasLabel[] path (CLI/headless)
-      return applyCalibration(db, body.labels as BiasLabel[]);
+      return applyCalibration(db, body.labels as BiasLabel[], { seed });
     }
     reply.status(400).send({ error: 'body.marks (owner {id,label}[]) or body.labels (BiasLabel[]) required, non-empty' });
   });
@@ -441,12 +463,14 @@ export async function routes(app: FastifyInstance, opts: RoutesOptions): Promise
   // directory looks synced. null when it looks local-only.
   app.get('/api/at-rest', async () => ({ syncWarning: cloudSyncWarning(resolveAirlockDir()) }));
 
-  app.get('/api/experimental-lenses', async () => ({ enabled: experimentalLensesEnabled(db) }));
-  app.put('/api/experimental-lenses', async (request, reply) => {
-    const on = (request.body as { enabled?: unknown })?.enabled;
-    if (typeof on !== 'boolean') { reply.status(400).send({ error: 'body.enabled must be a boolean' }); return; }
-    return { enabled: setExperimentalLenses(db, on) };
-  });
+  // Readable, never writable. The research layer is switched on out of band — a hand-written line in
+  // between.config.json, or BETWEEN_RESEARCH_LAYER=1 on the command line — so that turning it on is
+  // a deliberate act rather than a click. There is no PUT here on purpose: a gate an ordinary build
+  // can flip is a gate a bug can flip.
+  app.get('/api/experimental-lenses', async () => ({
+    enabled: experimentalLensesEnabled(),
+    activation: 'research mode — set in between.config.json or the environment, never from the app',
+  }));
 
   // Owner timezone (P2-14): day-level surfaces (the river, the heatmap, busiest day/hour) bucket by
   // the owner's LIVED clock, not UTC. Onboarding posts Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -576,6 +600,24 @@ export async function routes(app: FastifyInstance, opts: RoutesOptions): Promise
     return computeAmbient(db, id, { tzOffsetHours: toInt((request.query as { tz?: string }).tz) });
   });
 
+  // A diagnostic bundle for a bug report: shapes and counts, never the archive. It exists so that
+  // nobody has to paste their own messages into a public issue to get help — OPERATIONS has a whole
+  // procedure for cleaning up after that, and this is the thing that makes the procedure unnecessary.
+  app.get('/api/diagnostics', async () => buildDiagnosticBundle(db, {
+    engineMode: getEngineMode(db),
+    experimentalLenses: experimentalLensesEnabled(db),
+    mockAllowed: mockAllowed(),
+  }));
+
+  // Archive health — what is actually in this archive, before anything interprets it. Deliberately
+  // the cheapest and most boring endpoint here: a reader should be able to see how much of their
+  // relationship is missing before they are shown a single trend line drawn over the hole.
+  app.get('/api/threads/:id/archive-health', async (request, reply) => {
+    const id = requireThread(request, reply);
+    if (id == null) return;
+    return computeArchiveHealth(db, id, { tzOffsetHours: toInt((request.query as { tz?: string }).tz) });
+  });
+
   // S2 episode explorer: the episode list, and one episode with the words underneath (receipts).
   app.get('/api/threads/:id/episodes', async (request, reply) => {
     const id = requireThread(request, reply);
@@ -694,11 +736,26 @@ export async function routes(app: FastifyInstance, opts: RoutesOptions): Promise
       evidenceIds: (Array.isArray(ids) ? ids : []).map((x) => Number(String(x).replace(/^m/, ''))).filter((n) => Number.isFinite(n)),
       confidence: null,
     }));
+    // The prose is frozen; what the archive can see is not. This is recomputed at read time on
+    // purpose — a reading written when a span looked complete must start carrying the caveat the
+    // day a later import reveals the hole, rather than staying confidently wrong forever.
+    let spanCaveat: string | null = null;
+    try {
+      // No tz override: the lens falls back to the owner's stored offset, same as the report does.
+      spanCaveat = spanDiscontinuity(
+        computeArchiveHealth(db, row.thread_id),
+        row.range_start_ms, row.range_end_ms,
+      );
+    } catch {
+      // A reading must still open if the health pass cannot run. Silence here means "not computed",
+      // and the Explore report remains the authority.
+    }
     return {
       id: row.id, threadId: row.thread_id, lens: row.lens,
       rangeStartMs: row.range_start_ms, rangeEndMs: row.range_end_ms,
       generatedAt: row.generated_at, promptVersion: row.prompt_version,
       title: null, contentMd: row.content_md, modelNote: row.model_note, claims,
+      spanCaveat,
     };
   });
 

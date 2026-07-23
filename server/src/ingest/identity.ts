@@ -100,11 +100,53 @@ export function resolveIdentities(messages: NormalizedMessage[], _region: string
     }
   }
 
-  // ── Owner detection: strict, unique maximum co-occurrence degree. The owner shares messages
-  // with the most distinct people; a counterparty typically co-occurs only with the owner. ──
+  // ── Owner detection ────────────────────────────────────────────────────────
+  //
+  // First, the answer the file states outright. On an OUTGOING message the address in the `from`
+  // role is the sender, and the sender of an outgoing message is the archive's owner — that is what
+  // outgoing means. Android MMS writes it as the type-137 address. This is not a heuristic and does
+  // not need a second conversation to work.
+  //
+  // It matters most for the smallest files, which is exactly where the heuristic below cannot help:
+  // a single-conversation export has one counterparty, so nobody has two neighbours and no unique
+  // maximum exists. The owner then fell in among the counterparties — and because the owner's
+  // number appears in MMS <addrs> but never in an <sms> row, ONE file produced two different
+  // participant sets for one conversation and filed it as two threads, the second looking like a
+  // group chat. Reading the direction the file already recorded costs nothing and settles it.
   let owner: Cluster | null = null;
   const list = [...clusters.values()];
-  if (list.length >= 2) {
+  const directOwnerKeys = new Set<string>();
+  for (const m of messages) {
+    if (m.direction === 'outgoing') {
+      for (const a of m.addresses) {
+        if (a.role !== 'from') continue;
+        const key = a.e164 ?? a.raw;
+        if (key !== '') directOwnerKeys.add(key);
+      }
+      continue;
+    }
+
+    // The mirror image is equally direct for an incoming one-to-one MMS: when the record names
+    // exactly one recipient, that recipient is the archive owner. A group names several recipients
+    // and deliberately contributes no evidence here.
+    if (m.direction === 'incoming') {
+      const recipients = [...new Set(m.addresses
+        .filter((a) => a.role === 'to')
+        .map((a) => a.e164 ?? a.raw)
+        .filter((key) => key !== ''))];
+      if (recipients.length === 1) directOwnerKeys.add(recipients[0]);
+    }
+  }
+  if (directOwnerKeys.size === 1) {
+    // Exactly one address ever occupies an owner role: unambiguous.
+    owner = clusters.get([...directOwnerKeys][0]) ?? null;
+  } else if (directOwnerKeys.size > 1) {
+    // More than one is a contradiction in the file rather than a fact about a person — a relay, a
+    // merged export, a rewritten backup. Say nothing and let the co-occurrence rule decide.
+    owner = null;
+  }
+
+  if (owner == null && list.length >= 2) {
     const ranked = [...list].sort(
       (a, b) => b.neighbors.size - a.neighbors.size || a.tempId - b.tempId,
     );
@@ -117,6 +159,7 @@ export function resolveIdentities(messages: NormalizedMessage[], _region: string
 
   const contacts: ResolvedContact[] = list.map((c) => ({
     tempId: c.tempId,
+    key: c.key,
     displayName: c.nameHint?.name ?? null,
     primaryE164: c.e164,
     isOwner: owner != null && c.tempId === owner.tempId,

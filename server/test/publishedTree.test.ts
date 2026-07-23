@@ -125,7 +125,11 @@ describe('the tree that would be published', () => {
       for (const m of text.matchAll(/\b[A-Za-z]:\\{1,2}[^\s"'`)\]]*/g)) {
         const hit = m[0];
         if (/^[A-Za-z]:\\{1,2}(path|to|your|Users\\<|\.\.\.)/i.test(hit)) continue;
-        if (/sms-XXXX|sms-YYYY|<timestamp>|example/i.test(hit)) continue;
+        // Placeholder shapes only. This used to exempt any path containing "example", and a real
+        // local path — the maintainer's own drive and directory layout, quoted in the changelog
+        // entry about having leaked it — sailed through because a folder in it was named
+        // `examples`. A guard whose exemption matches a substring of real data is not a guard.
+        if (/sms-XXXX|sms-YYYY|<timestamp>|\\example\.db$/i.test(hit)) continue;
         bad.push(`${p}: ${hit}`);
       }
       for (const m of text.matchAll(/\/(?:Users|home)\/(?!you\b|<)[a-z0-9._-]+/gi)) {

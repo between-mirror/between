@@ -25,6 +25,7 @@ function buildGraph(): ResolvedGraph {
       contentSha256: 'a'.repeat(64),
       importedAt: new Date(T1).toISOString(),
       recordCount: 3,
+      kind: 'android_smsbackup' as const,
     },
     contacts: [
       { tempId: OWNER_TEMP, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },
@@ -101,6 +102,70 @@ beforeAll(async () => {
 afterAll(async () => {
   await app.close();
   rmSync(tmpDir, { recursive: true, force: true });
+});
+
+describe('a reading says what its own span could not see', () => {
+  // Its own database. The shared seed above is asserted on message-for-message by half this file,
+  // and this suite has to plant a hole in the archive to have anything to report.
+  let gapApp: FastifyInstance;
+  let gapDbPath: string;
+  const FAR = T1 + 400 * 86_400_000;
+
+  beforeAll(async () => {
+    gapDbPath = join(tmpDir, 'gap.db');
+    const db = openDb(gapDbPath);
+    db.bulkInsertGraph(buildGraph());
+    // One message a year out, so the months between are genuinely absent from the archive rather
+    // than merely outside the reading's range.
+    db.raw.prepare(
+      `INSERT INTO messages (thread_id, sender_contact_id, direction, kind, sent_at_ms, body_text,
+                             is_reaction, source_file_id, source_kind, dedup_key)
+       VALUES (1, 2, 'incoming', 'sms', ?, 'much later', 0, 1, 'android_smsbackup', 'span-caveat-probe')`,
+    ).run(FAR);
+    db.close();
+    gapApp = buildServer(gapDbPath);
+    await gapApp.ready();
+  });
+
+  afterAll(async () => { await gapApp.close(); });
+
+  /** The caveat is computed at read time, never frozen with the prose. */
+  const freeze = (rangeStartMs: number, rangeEndMs: number): number => {
+    const db = openDb(gapDbPath);
+    const info = db.raw.prepare(
+      `INSERT INTO reflections (thread_id, lens, range_start_ms, range_end_ms, content_md,
+                                evidence_json, prompt_version, generated_at)
+       VALUES (1, 'first_reflection', ?, ?, 'A reading.', '{}', 1, ?)`,
+    ).run(rangeStartMs, rangeEndMs, new Date(T1).toISOString());
+    db.close();
+    return Number(info.lastInsertRowid);
+  };
+
+  it('carries no caveat when the span it covers is continuous', async () => {
+    const id = freeze(T1, T3);
+    const res = await gapApp.inject({ method: 'GET', url: `/api/reflections/${id}` });
+    expect(res.statusCode).toBe(200);
+    expect((res.json() as { spanCaveat: string | null }).spanCaveat).toBeNull();
+  });
+
+  it('names the missing months when the span has a hole in it', async () => {
+    const id = freeze(T1, FAR);
+    const res = await gapApp.inject({ method: 'GET', url: `/api/reflections/${id}` });
+    const caveat = (res.json() as { spanCaveat: string | null }).spanCaveat;
+    expect(caveat).toContain('months with no messages at all');
+    expect(caveat).toContain('missing from the reading');
+  });
+
+  it('fires on a whole-thread reading, which is the only kind the app can produce', async () => {
+    // firstReflection writes range 0/0 for a reading with no range, and the Analyze panel never
+    // sends one. Treating 0 as a real timestamp made `to <= from` true, so this caveat was computed,
+    // returned null, and rendered nothing on every reading a user could actually generate.
+    const id = freeze(0, 0);
+    const res = await gapApp.inject({ method: 'GET', url: `/api/reflections/${id}` });
+    const caveat = (res.json() as { spanCaveat: string | null }).spanCaveat;
+    expect(caveat, 'a whole-thread reading over a holed archive must carry the caveat').toBeTruthy();
+    expect(caveat).toContain('months with no messages at all');
+  });
 });
 
 describe('read API', () => {
@@ -199,7 +264,12 @@ describe('read API', () => {
     const before = await app.inject({ method: 'GET', url: '/api/meta/onboarding' });
     // toMatchObject: the response also carries archive-scale fields (messageCount/first/last/contactCount)
     // for the awe-reveal; this test only cares about the onboarding/region/owner round-trip.
-    expect(before.json()).toMatchObject({ onboarding: null, region: null, ownerContactId: null });
+    // ownerContactId is already set: an import that can identify the archive owner now records
+    // them, because archive health reads that key to tell the owner apart from the people they
+    // talk to, and it used to be written only by this endpoint — so a CLI-built archive had none
+    // and the group-contamination warning fired on every conversation in it.
+    expect(before.json()).toMatchObject({ onboarding: null, region: null });
+    expect(before.json().ownerContactId).toBe(OWNER_TEMP);
 
     const post = await app.inject({
       method: 'POST',

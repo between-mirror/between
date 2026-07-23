@@ -1766,6 +1766,16 @@ input { font-family: inherit; }
   letter-spacing: var(--track-label);
   color: var(--ink-faint);
 }
+/* The standing caveat under a reading. Deliberately plain sentence case, not the uppercase label
+   register of the dateline above it — this is something to read, not a tag to skim past. */
+.reflection-caveat {
+  margin: var(--sp-2) 0 0;
+  max-width: 62ch;
+  font-family: var(--sans);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
 .reflection-body { color: var(--ink); }
 .reflection-para {
   margin: 0 0 var(--sp-4);
@@ -2011,9 +2021,25 @@ input { font-family: inherit; }
 .cal2-opt-key { font-family: var(--mono); font-size: var(--text-xs); color: var(--ink-faint); }
 .cal2-opt-label { font-size: var(--text-base); font-weight: 600; color: var(--ink); text-transform: capitalize; }
 .cal2-opt-cap { font-size: var(--text-xs); color: var(--ink-faint); }
-.cal2-opt--mild { border-bottom: 2px solid color-mix(in srgb, var(--clay) 30%, var(--line-2)); }
-.cal2-opt--harsh { border-bottom: 2px solid color-mix(in srgb, var(--clay) 60%, var(--line-2)); }
-.cal2-opt--cruel { border-bottom: 2px solid var(--clay); }
+/* Rubric v2. The rule under each option climbs with how hard the behaviour is — and `repair` is
+   warmth, not a lighter shade of hostility, because it is a different kind of thing rather than a
+   gentler point on one ladder. Capitalization is off: these are sentences, not category names. */
+.cal2-opt-label { text-transform: none; }
+.cal2-opt--repair { border-bottom: 2px solid color-mix(in srgb, var(--warmth) 55%, var(--line-2)); }
+.cal2-opt--dismissal { border-bottom: 2px solid color-mix(in srgb, var(--clay) 30%, var(--line-2)); }
+.cal2-opt--name_calling { border-bottom: 2px solid color-mix(in srgb, var(--clay) 60%, var(--line-2)); }
+.cal2-opt--threat { border-bottom: 2px solid var(--clay); }
+
+/* The review step: where the owner's reading and the model's differ. Presented as a list to read,
+   not a diff to resolve — the owner is the authority here and can change any of them. */
+.cal2-disagreements { list-style: none; margin: var(--sp-4) 0 0; padding: 0; }
+.cal2-disagreement { margin-bottom: var(--sp-5); padding-left: var(--sp-3); border-left: 2px solid var(--line-2); }
+.cal2-disagreement--model_harder { border-left-color: color-mix(in srgb, var(--clay) 55%, transparent); }
+.cal2-disagreement--owner_harder { border-left-color: color-mix(in srgb, var(--amber) 55%, transparent); }
+.cal2-disagreement-why { font-family: var(--sans); font-size: var(--text-sm); color: var(--ink-soft); margin: 0 0 var(--sp-2); }
+.cal2-relabel { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); font-size: var(--text-sm); }
+.cal2-relabel-label { color: var(--ink-faint); font-family: var(--sans); }
+.cal2-relabel select { font-family: var(--sans); font-size: var(--text-sm); padding: 2px var(--sp-2); }
 
 .cal2-row { display: flex; gap: var(--sp-3); margin-top: var(--sp-3); }
 .cal2-skip { background: none; border: none; font-family: var(--sans); font-size: var(--text-sm); color: var(--ink-faint); cursor: pointer; padding: var(--sp-2) 0; }
@@ -2136,4 +2162,110 @@ input { font-family: inherit; }
 
 @media (max-width: 640px) {
   .data-fact { grid-template-columns: 1fr; gap: 2px; }
+}
+
+/* ── The archive caution, on Home ───────────────────────────────────────────
+   The quiet escalation. It sits above the hero because a hole has to be legible
+   before the first chart draws a line through it — but it is a note, not an
+   alarm: clay and amber, no red, no icon, no border that shouts. "Serious" is
+   distinguished only by a slightly stronger left rule and a solid ink heading,
+   because a card that looks urgent every time is a card that gets scrolled past
+   on the day it matters. */
+.archive-caution {
+  margin: 0 0 var(--sp-5);
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 2px solid color-mix(in oklab, var(--clay) 55%, transparent);
+  background: color-mix(in oklab, var(--clay) 7%, transparent);
+  border-radius: 0 var(--radius-sm, 4px) var(--radius-sm, 4px) 0;
+}
+.archive-caution--serious {
+  border-left-color: var(--amber);
+  background: color-mix(in oklab, var(--amber) 8%, transparent);
+}
+.archive-caution-head {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.archive-caution--serious .archive-caution-head { color: var(--ink); }
+.archive-caution-reasons {
+  margin: var(--sp-2) 0 0;
+  padding-left: var(--sp-4);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  max-width: 72ch;
+}
+.archive-caution-reasons li { margin-bottom: 2px; }
+.archive-caution-more {
+  margin-top: var(--sp-2);
+  font-size: var(--text-sm);
+}
+
+/* The same note, at the head of a reading — where prose would otherwise close
+   the gap in a sentence that reads perfectly well. */
+.reflection-span-caveat {
+  margin: var(--sp-2) 0 0;
+  padding-left: var(--sp-3);
+  border-left: 2px solid color-mix(in oklab, var(--clay) 55%, transparent);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+/* ── Archive health ─────────────────────────────────────────────────────────
+   Deliberately the plainest view in the application. Everything else here is a
+   picture of a relationship; this is a picture of a FILE, and it should not be
+   pretty enough to argue with. Empty months are drawn, not skipped — an absent
+   row is invisible, and invisible is the failure this whole surface exists to
+   prevent. */
+.health-head { margin-bottom: var(--sp-5); }
+.health-lede { max-width: 68ch; color: var(--ink-soft); margin: var(--sp-2) 0 0; }
+.health-note { max-width: 68ch; color: var(--ink-soft); font-size: var(--text-sm); margin: 0 0 var(--sp-3); }
+.health-flags { margin: var(--sp-6) 0; }
+.health-flags h3 { margin-bottom: var(--sp-3); }
+
+.health-months { list-style: none; margin: 0 0 var(--sp-6); padding: 0; }
+.health-month {
+  display: grid;
+  grid-template-columns: 9rem 1fr 11rem;
+  gap: var(--sp-3);
+  align-items: center;
+  padding: 2px 0;
+  font-size: var(--text-sm);
+}
+.health-month-label { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.health-month-bar {
+  height: 0.85rem;
+  background: color-mix(in oklab, var(--ink) 7%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.health-month-fill { display: block; height: 100%; background: var(--warmth); }
+.health-month-n { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+
+/* A month with nothing in it gets a visible empty track rather than a missing row. */
+.health-month--empty .health-month-bar {
+  background: repeating-linear-gradient(
+    45deg, transparent, transparent 3px,
+    color-mix(in oklab, var(--clay) 30%, transparent) 3px,
+    color-mix(in oklab, var(--clay) 30%, transparent) 6px
+  );
+}
+.health-month--empty .health-month-n { color: var(--clay); }
+.health-month--thin .health-month-fill { background: var(--clay); }
+
+.health-gaps, .health-facts { max-width: 72ch; color: var(--ink-soft); line-height: 1.6; }
+.health-gaps li, .health-facts li { margin-bottom: var(--sp-2); }
+.health-close {
+  margin-top: var(--sp-6);
+  max-width: 68ch;
+  color: var(--ink-faint);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 40rem) {
+  .health-month { grid-template-columns: 6.5rem 1fr; }
+  .health-month-n { grid-column: 2; color: var(--ink-faint); }
 }

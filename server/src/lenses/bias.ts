@@ -13,11 +13,31 @@
 export interface BiasLabel {
   dir: 'ME' | 'THEM';
   tension: number;   // the MODEL's tension for this message (independent of the label)
-  label: string;     // the owner's label: benign | joke | mild | harsh | cruel | skip
+  /**
+   * The owner's label, under either rubric.
+   *   v1 (severity):  benign | joke | mild | harsh | cruel | skip
+   *   v2 (observable): none | repair | dismissal | name_calling | threat | skip
+   */
+  label: string;
 }
 
-const HOSTILE_LABELS = new Set(['mild', 'harsh', 'cruel']);
-const SEVERITY: Record<string, number> = { benign: 0, joke: 0, mild: 1, harsh: 2, cruel: 3 };
+// Both vocabularies live here on purpose. A calibration taken under v1 stays valid until its owner
+// re-runs one — their thresholds are still their thresholds — so this module has to keep reading v1
+// labels correctly for as long as any v1 record exists. Merging the two into one scale would
+// silently reinterpret answers people gave to a different question.
+const V1_HOSTILE = new Set(['mild', 'harsh', 'cruel']);
+const V2_HOSTILE = new Set(['dismissal', 'name_calling', 'threat']);
+const SEVERITY: Record<string, number> = {
+  // v1 — a judgement of how bad it was.
+  benign: 0, joke: 0, mild: 1, harsh: 2, cruel: 3,
+  // v2 — what is observable in the words. `repair` is a real behaviour and is not hostility.
+  none: 0, repair: 0, dismissal: 1, name_calling: 2, threat: 3,
+};
+
+/** True when a label from either rubric marks a hard message. */
+export function hostileLabel(label: string): boolean {
+  return V1_HOSTILE.has(label) || V2_HOSTILE.has(label);
+}
 
 export interface SelfReportBias {
   n: number;
@@ -47,8 +67,8 @@ export function computeSelfReportBias(labels: BiasLabel[]): SelfReportBias {
   const scored = labels.filter((l) => l.label && l.label !== 'skip');
   const ownHi = scored.filter((l) => l.dir === 'ME' && l.tension >= 2);
   const otherHi = scored.filter((l) => l.dir === 'THEM' && l.tension >= 2);
-  const selfHostileRate = rate(ownHi.filter((l) => HOSTILE_LABELS.has(l.label)).length, ownHi.length);
-  const otherHostileRate = rate(otherHi.filter((l) => HOSTILE_LABELS.has(l.label)).length, otherHi.length);
+  const selfHostileRate = rate(ownHi.filter((l) => hostileLabel(l.label)).length, ownHi.length);
+  const otherHostileRate = rate(otherHi.filter((l) => hostileLabel(l.label)).length, otherHi.length);
   const leniencyBias = otherHostileRate - selfHostileRate;
   const meanSev = (xs: BiasLabel[]) => (xs.length ? xs.reduce((s, l) => s + (SEVERITY[l.label] ?? 0), 0) / xs.length : 0);
 

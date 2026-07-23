@@ -91,7 +91,7 @@ database path, its size, and *Back up now* / *Delete all Between data*.
 Cut to a still card on the paper background:
 
 > **Between Mirror**
-> Read your own archive honestly.
+> Read your own archive — with the words underneath.
 > Free and open source · No accounts · No telemetry
 > github.com/between-mirror/between
 

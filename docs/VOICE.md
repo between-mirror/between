@@ -117,7 +117,30 @@ Rhythm: short sentences carry the hard things. Longer ones are allowed warmth. O
 
 **Calibration (P2 — the hold-out labeling + episode grading; honesty is load-bearing, see METHOD.md §0)**
 - Hold-out intro (verbatim): `This tunes the reading to you — and it only works if you're honest, especially about your own hardest messages. Score your words as harshly as you'd score the same words from them. A gentle-on-yourself calibration produces a comforting, wrong answer.`
-- Per-item hint: `Whose is this — and how does it actually land, not how you'd defend it?`
+- Per-item hint (rubric v1, superseded — kept because calibrations taken under it remain in force): `Whose is this — and how does it actually land, not how you'd defend it?`
+
+**Calibration rubric v2 (2026-07-22 — observable behaviours, not severity; see METHOD.md §0a)**
+
+*The v1 ladder (benign / joke / mild / harsh / cruel) asked for a judgement of how bad a message was,
+which is a judgement of intent — the one axis where a defensive labeller has the most room and two
+honest people disagree hardest. v2 asks what is visible in the words instead. The honesty imperative
+above is unchanged and stays verbatim; it is the part that was working.*
+
+- Per-item hint (v2): `What is actually in these words? Not how you meant it — what it says.`
+- The five points, in order:
+  - `Nothing of the kind` / caption: `ordinary talk`
+  - `Reaching back` / caption: `an apology, a softening, an attempt to fix it`
+  - `Brushed past` / caption: `talked over, changed the subject, didn't engage`
+  - `Named them` / caption: `said what they are, not what they did`
+  - `A threat or an ultimatum` / caption: `or else, or I'll, or we're done`
+- Skip: `Can't tell (s)`
+- Review header: `Where the reading and you disagree`
+- Review intro: `On these, the tool read your archive differently than you did. Nothing is settled until you say so — look at them, and change any label you want to change.`
+- Review, model harder: `The tool called this a hard message. You didn't.`
+- Review, owner harder: `You called this a hard message. The tool didn't.`
+- Review confirm: `These are right — save my calibration`
+- Review adjust: `Let me change some`
+- Review, no disagreement: `The tool read every one of these the same way you did. Nothing to reconsider.`
 - Grading intro (verbatim): `You're confirming a read of your own worst hours, both sides. Fair, overstated, or understated — honestly. This is the last thing standing between the tool and a flattering lie.`
 - Calibration asymmetry — self-lenient: `You marked your own hard messages more gently than your partner's. That's the common human tilt — so this reading leans on the model's own eyes, not just your labels, and holds the frame more neutral.`
 - Calibration asymmetry — balanced: `Your calibration weighed both sides evenly. Read the reading as one perspective to review, not a verdict.`

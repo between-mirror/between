@@ -8,7 +8,37 @@ every capability called "implemented" below is one CI runs a test for.*
 
 The deterministic instrument runs end-to-end on a real archive and is covered by the test suite:
 
-- **Ingest** — Android SMS Backup & Restore XML → normalized SQLite (parse, dedup, identity, threads).
+- **Ingest** — three claimed importers into one normalized SQLite store (parse, dedup, identity,
+  threads): Android SMS Backup & Restore XML; WhatsApp exported chats (.txt/.zip, one-to-one); and a
+  generic CSV/JSON/JSONL importer for anything reducible to when / who / direction / what. Each emits
+  the same record shape, so a new format is a new parser and touches nothing else. WhatsApp date order
+  is inferred across the whole file and says when it was not proven; the archive owner must be named
+  because no export marks one. A fourth — iMessage `chat.db` — is built and tested but **not claimed**;
+  see *Supported inputs* for why and how to try it.
+- **Importing more than once** — a second backup merges into the archive instead of forking it.
+  Threads and contacts are keyed on the participants' own identifiers rather than on per-file
+  numbering, and the dedup key is source-neutral (counterpart, direction, a 60-second bucket, a body
+  hash), so the same conversation seen twice converges while two messages that share a minute and a
+  word stay two. Participant roles are encoded structurally rather than as text a source identifier
+  can imitate, so an ordinary participant cannot become the archive owner's note-to-self thread. A
+  person is matched on the **number underneath the spelling** as well as the
+  spelling itself, because one export writes `+15555550100` where another writes `(555) 555-0100`
+  and they are one person. **Who the archive belongs to is remembered archive-wide**: that is found
+  by co-occurrence or by a message's unambiguous sender/recipient roles. A file holding a single
+  conversation cannot show co-occurrence, but an incoming one-to-one MMS that names exactly one
+  recipient identifies that handset's owner directly; an import with neither kind of evidence reads
+  the owner from the store instead of guessing. Threads built before anyone could see the owner are
+  re-keyed the moment it becomes known. Every row records the format it came from; existing
+  archives are upgraded by forward-only migrations that copy the database first and cannot drop a
+  row — and the copy is reused across a retry only when it really is this archive's own
+  pre-migration state, not merely a file with the right name. Every rewrite onto a UNIQUE column is
+  collision-safe by construction: a value that would collide is not written, the row keeps the one
+  it has, and the count is recorded. **An archive has exactly one owner**, and the first import able
+  to identify them settles it: a second file whose guess differs cannot add a second, because two
+  flagged people would both drop out of the thread key and leave their conversations sharing one.
+- **Rows an importer cannot read are reported, not dropped quietly.** The generic importer refuses a
+  row whose date is ambiguous rather than guessing at it, and the count and the reasons come back
+  with the import result.
 - **Baseline & ambient stats** — volume, rhythm (hour-of-day / day-of-week, bucketed by the owner's
   lived timezone), cadence, word maps, emoji, monthly volume.
 - **Sentiment river** — per-day warmth/tension, VADER by default, model L1 when drained. Thread-level
@@ -27,8 +57,18 @@ The deterministic instrument runs end-to-end on a real archive and is covered by
   question that closes a reading — are composed by the app from the authored template sets in
   [VOICE.md](VOICE.md) §6b, selected deterministically from a hash of the reading's own text. A
   payload containing a model-written bridge or question is rejected whole.
-- **Calibration** — the hold-out labeling flow writes per-owner thresholds and a *calibration-asymmetry*
-  check (with a minimum-sample guard); the power-balance gate reads it.
+- **Calibration (rubric v2)** — the hold-out labeling flow writes per-owner thresholds and a
+  *calibration-asymmetry* check (with a minimum-sample guard); the power-balance gate reads it. The
+  hold-out asks what is **observable** in the words (named them / a threat / brushed past / reaching
+  back) rather than how bad a message was, because severity is a judgement of intent and intent
+  cannot be read off a text. The sample is **stratified** across the model's own low/mid/high tension
+  bands per side — v1 drew only the messages the model already called hostile and then used those
+  labels to validate the model's threshold — and the draw is **seeded**, with the seed recorded so
+  any set of thresholds can be traced to the exact sample behind it. Where the owner and the model
+  disagree is **shown before anything is saved**, and the owner can change any label; v1 picked the
+  thresholds by maximizing F1 over disagreements nobody was shown. Records carry `rubric_version`;
+  a v1 calibration stays in force until its owner chooses to re-run. Documented in
+  [METHOD.md](METHOD.md) §0a.
 - **Exports** — verbatim messages + a deterministic SHA-256 integrity hash, purpose-limitation header.
 - **The network boundary** — loopback-only bind (refuses to boot otherwise), Host/Origin gate,
   `logger:false`, zero telemetry dependencies — enforced by a build-blocking boundary test.
@@ -44,20 +84,41 @@ The deterministic instrument runs end-to-end on a real archive and is covered by
   Calibration moved to Settings and appears inline wherever a reading is provisional without it.
 - **No assumed gender** — user-visible copy never guesses anyone's gender; swept per-file by test.
 
-## Experimental (flag-gated, OFF by default)
+## The interpretive layer — disabled in ordinary builds
 
-Turned on only via Settings, with sober consent — text-only, calibration-dependent, **not externally
-validated** (see [ETHICS.md](ETHICS.md), [THREAT-MODEL.md](THREAT-MODEL.md)):
+A **research preview, not validated.** Text-only, calibration-dependent, and evaluated by nobody
+(see [ETHICS.md](ETHICS.md), [THREAT-MODEL.md](THREAT-MODEL.md)):
 
 - The **L4 abuse-pattern stage-2** drain.
 - The **power-balance support frame** (a directional reading over time).
 - The **other-side reading** and the **findings reading** (the interpretive prose).
 
-The deterministic findings **A–E counts** remain available regardless of this flag.
+**It cannot be switched on from inside the application, and there is no setting for it.** An earlier
+version of this file said it was "turned on via Settings, with sober consent" — describing a control
+that had never been built, while the actual path was an HTTP call the app could make on its own
+behalf. Both are gone. Nothing in the running program can open this gate; a test asserts the route
+does not exist.
+
+**Research activation, documented for evaluators.** It is deliberately not removed — an external
+review cannot evaluate what it cannot run. Two separate acts turn it on, because they answer
+different questions:
+
+1. **The flag**, a decision about a process: `"researchInterpretiveLayer": true` written by hand into
+   `between.config.json`, or `BETWEEN_RESEARCH_LAYER=1` in the environment.
+2. **The acknowledgement**, a decision about an *archive* — whether an unvalidated reading may be
+   written about the specific person in it: `npx tsx server/src/cli/research-mode.ts --acknowledge`,
+   which prints the terms in full and records nothing until you re-run it with `--yes`. Withdraw with
+   `--withdraw`; check either with `--status`.
+
+The flag alone runs nothing. The deterministic findings **A–E counts** never depended on any of this
+and remain available.
 
 ## Designed, not yet implemented
 
-- **iMessage / iPhone import** and **WhatsApp .txt import** (today: Android only — see Supported inputs).
+- **iMessage / iPhone import** (today: Android SMS, WhatsApp, and a generic CSV/JSON importer).
+- **Group-chat import for WhatsApp and the generic importer** — refused rather than approximated: a
+  group threads by a participant SET, which a single correspondent field cannot express, and importing
+  it approximately would put the wrong people in the wrong conversation.
 - **"Since you last looked"** diff readings over re-imported backups.
 - The **signed one-click installer** (Tauri desktop wrapper).
 - An **OS-level sandbox** for the subscription drain (today: tool-level containment only).
@@ -74,6 +135,13 @@ The deterministic findings **A–E counts** remain available regardless of this 
 
 A security review is a snapshot, not a certificate — so this section says what stands open, not just
 what closed. The July-2026 adversarial security/grounding review, in three honest buckets:
+
+**v0.5.0 release gate — demonstrated 2026-07-22.** The final confirmation re-read every prior round,
+attacked the complete release tail locally without external agent fan-out or paid API calls, and
+found zero confirmed P0s. Two missing boundary regressions were added: Android's real owner
+placeholder across both partial/full import orders, and a v0.4.1-style owner-only thread across
+migration and re-import. The complete gate is 781 server tests, 24 web tests and clean typechecks.
+Publication is a separate owner act; this remains a snapshot, not a certificate.
 
 **Fixed — original defects, test-first, shipped in v0.2.0.** P0-1…P0-6 and P1-7…P1-13, P2-14: raw
 model output reaching a frozen reading; unverified result envelopes; un-rechecked cleaned payloads;
@@ -93,260 +161,42 @@ see [CHANGELOG.md](../CHANGELOG.md).
   means unrecoverable loss; best-effort owner-only ACLs plus a cloud-sync warning are the current
   posture. Revisited when the packaged app can hold a key properly.
 
-**Newly tracked — found after that review closed** (2026-07-21 productization review).
+**Newly tracked — found after that review closed.** Defects have kept being found and fixed since,
+most of them by attacking this project's own claims rather than by waiting for someone to trip over
+them. The full record — every cause, remediation and regression test — is in
+[POSTMORTEMS.md](POSTMORTEMS.md). It is long, and it is meant to be: a claim that was never tested is
+not a claim, and the list is the evidence that they are tested now. (This paragraph used to carry a
+running total. Nothing checked it, and it was wrong within one release — which is the exact shape of
+the problem this file exists to prevent, so it now points at the record instead of counting it.)
 
-- *Fixed in v0.2.1:* the release script force-moved tags on re-publish, so one version could name two
-  different trees. Tags are now immutable; a correction bumps the patch. Guarded by a test.
-- *Fixed in v0.2.3–v0.2.4:* Windows CI had been removed rather than repaired, leaving the primary
-  development platform unverified behind an explanation. Restoring it surfaced a real user-facing
-  defect: Node 20 was never a working floor on Windows (better-sqlite3 publishes no Node 20 win32
-  prebuild, and the source-build fallback needs a C++ toolchain), so the documented install requirement
-  was false. The floor is now Node 22, and CI is a required matrix of ubuntu-latest + windows-latest ×
-  Node 22 and 24. v0.2.3's own matrix then came back red because the cache key still named Node 20 and
-  served a binary built for the wrong ABI; v0.2.4 fixed the key.
-- *Fixed in v0.3.0:* connective prose (bridges and the closing question) was still model-authored and
-  therefore the one unreceipted thing a reading could contain — the model can no longer emit either.
-  Thread-level coverage was computed but did not gate the surface displaying it; it now does, in both
-  directions.
-- *Fixed in v0.3.0, found while capturing the release's own screenshots:* the boot-time at-rest ACL
-  hardening was locking the owner out of their own database on Windows — it applied inheritance flags
-  to files, where they are inert, after stripping every inherited entry, and reported success. Any
-  `npm run demo:serve` on Windows permanently bricked the demo database. The hardening now grants
-  before it strips, never recurses, verifies by opening the file, and rolls back if the owner has lost
-  access.
-- *Fixed in v0.3.0:* the Eras, Trajectory, Findings and rhythm views assumed the archive's owner was a
-  man and the other person a woman ("His hostile share", "She initiates"). The app knows which number
-  is yours and what you named the other person; it does not know anyone's gender.
-- *Fixed in v0.3.2:* the site's central honesty check — "never claims to produce evidence, only ever
-  refuses to" — was not checking anything. Two independent defects stacked. First, four literal
-  U+0008 BACKSPACE bytes sat where `\b` word boundaries belonged (a heredoc ate the backslashes), so
-  two of the three negation alternatives could never match and the test had degraded to a substring
-  search for "never". Second, and worse, the "per sentence" splitter ran over raw HTML, where
-  `answers.</p>` is not a sentence break; one measured "sentence" was 1123 characters spanning the
-  doctype, the whole nav, a `<meta>` description and the next section. Any overclaim was absolved by
-  any negation near it, including words in attributes no reader sees. Copy is now cut into the units
-  a reader reads one at a time, and the assertion was observed failing on a deliberate overclaim
-  before the fix was committed. A new source-hygiene test fails the build on any C0 control byte in
-  any committed text file.
-- *Fixed in v0.3.2, found by that new guard on its first run:* `docs/SPECS/airlock.md` had carried two
-  literal NUL bytes since its first commit, at the two separator positions of the idempotency key.
-  They render as nothing and made git classify the file as binary and refuse to diff it. Whoever
-  wrote `hash.ts` read the rendered spec, saw empty quotes, and used a space — so spec and
-  implementation disagreed silently for the project's entire history. The spec is corrected to the
-  shipped behaviour rather than the reverse: `input_hash` is a persisted primary key, and changing
-  the separator would strand every cached analysis in every existing database and force a paid
-  re-drain. The separator is now named (`SEP = one U+0020 SPACE`), not shown.
-- *Fixed in v0.3.2:* the release script could resurrect a file deleted for privacy. It emptied the
-  index with `git rm --cached`, which untracks without deleting, so a file present on `public` but
-  since deleted on `phase3` was still in the working tree when the final `git add .` ran — and came
-  back, in that release and every one after it. The obvious repair is worse: `git checkout phase3 --
-  .` stages what it restores, and would have published `docs/DECISIONS.md`, the private journal. The
-  sequence that satisfies both properties is now in `scripts/lib/Rebuild-PublicTree.ps1`, and the
-  test runs the real script plus both broken variants, asserting each exhibits its own defect. The
-  bug was latent — `public` and `phase3` differed by zero files — and would have fired on the first
-  deletion.
-- *Fixed in v0.3.2, and the most dangerous defect this project has had:* the release script could run
-  an entire release **from the wrong branch**. `$ErrorActionPreference = 'Stop'` does not apply to
-  native commands — verified on pwsh 7.6.3, where `$PSNativeCommandUseErrorActionPreference` defaults
-  to false — so a failing `git checkout public` printed its error and execution carried straight on to
-  the next line. The script would then rebuild, pass its assertions, commit, tag and push while HEAD
-  was still on `phase3`. Because `public` is an orphan line sharing no ancestor with `phase3`, pushing
-  that tag uploads the **entire private history**, including every `docs/DECISIONS.md` blob. The
-  DECISIONS/FABLE assertion would not have caught it: it inspects the tracked set, not the branch. The
-  script now checks `$LASTEXITCODE` after every git call that writes and positively verifies HEAD is
-  on `public` before anything is written, with a regression test that locks `public` in a worktree and
-  asserts nothing reaches the remote. A related fault: a failed push reported "Published… The tag is
-  now permanent" and exited 0, while the local tag it had already created made that version
-  permanently unpublishable — the immutability guard saw a tag over an identical tree and reported
-  "nothing to do" forever. Failed pushes now delete the local tag and say so.
-- *Fixed in v0.3.2:* **the name sweep — the last thing standing between a real name and a permanent
-  public tag — was failing open in two ways at once.** `git grep` exits 0 for a match, 1 for no
-  match, and anything else for "it did not run"; the script treated everything but 0 as clean and
-  discarded stderr, so an invalid pattern exited 128 and reported a passed sweep. And `git grep`
-  defaults to POSIX **basic** regex, where `|` is a literal character — so the obvious way to write a
-  pattern list, `Name1|Name2|handle`, could never match anything, silently, while reporting success. A
-  reviewer published a real name under a permanent tag through that hole. The sweep now uses `-E` and
-  treats only exit 1 as a pass. The nine live patterns were checked and all evaluate, so the tree was
-  never actually leaking; the defect was a trap for whoever next edited that file.
-- *Fixed in v0.3.2:* a failed `git ls-remote` silently removed the remote-tag guard, and the run then
-  **moved the published `main`** before the tag push was rejected — leaving the public branch showing
-  a tree that no tag names, which is the immutability promise broken exactly where a visitor sees it.
-- *Fixed in v0.3.2:* an interrupt between `git tag` and `git push <tag>` — Ctrl-C, a closed terminal,
-  a killed push — wedged that version permanently: every retry found a local tag over an identical
-  tree and reported "already published, nothing to do" while the remote had never received it. The
-  script already held the information to tell those cases apart and discarded it.
-- *Fixed in v0.3.2:* the operator's own **machine-local gitignore** silently truncated the published
-  tree. Emptying the index to let `.gitignore` decide also gave a vote to `core.excludesFile` and
-  `.git/info/exclude`, both per-machine and invisible to the repository; a personal global ignore
-  containing `site/` dropped the whole site from a release, with no warning, under an immutable tag.
-  `git add` now runs with `-c core.excludesFile=`, `.git/info/exclude` is inspected, and a collapse in
-  the tracked-file count against the previous release aborts.
-- *Fixed in v0.3.2:* the release script's `Abort()` ran `git checkout -f phase3` unconditionally,
-  including from the preflight that refuses a dirty working tree. That path fires before the script
-  has changed anything, and the forced checkout silently discarded the author's uncommitted work —
-  the complaint destroyed what it was complaining about. It now restores only if the branch actually
-  moved.
-- *Audited in v0.4.0 — the published history, not just the tree.* Every release gate this project has
-  asks whether a private thing is absent from the tree about to be published. None of them can see
-  what is **already** published, and a file removed today is still in the commit that carried it.
-  [`scripts/audit-public-history.ps1`](../scripts/audit-public-history.ps1) closes that: it clones the
-  public repository fresh and sweeps file contents at every reachable commit, every path at every
-  commit, all commit messages, annotated tag messages, and every reachable blob.
+What is **open right now**, which is what this section is actually for:
 
-  **Result: CLEAN.** 9 patterns swept across **11 commits, 9 tags, 406 blobs**, range
-  `f84f2269..cb4b8c65`. No name or handle from the private pattern list appears anywhere in the
-  published history.
-
-  It refuses rather than guesses: it will not run against a clone carrying the private `phase3`
-  branch (where every pattern matches by design), it distinguishes git's three exit codes so an
-  unreadable repository can never report clean, and it fails if any tag points outside the commits it
-  walked. Nine regression tests cover each of those, plus a name planted in an old commit, a path, a
-  commit message and a tag message.
-- *Open, and separate from the sweep above — the exposure that sweep was never going to find.* The
-  name audit is clean. It looks for **names**, and what was published was **numbers**: the author's
-  real archive size, its exact message counts, its span and contact count, the literal local path it
-  sits at, and one line in `docs/METHOD.md` stating the author's gender and comparing how harshly he
-  rated his own hard messages against his partner's. Five documents, in **all 11 published commits and
-  all 9 tags** — including `HANDOFF.md`, which states as binding invariant 3 that no personal data may
-  ever be in the repository, and gives the counts four paragraphs later.
-
-  Removed from the tree and guarded going forward by
-  [`publishedTree.test.ts`](../server/test/publishedTree.test.ts), which asserts on what the published
-  set *contains* rather than only on what it excludes. **The published history is not fixed by that**,
-  and the owner has decided the remediation: privacy beats immutability, and the public repository is
-  being recreated from the cleaned tree rather than rewritten in place — the only option that leaves
-  no fetchable objects behind. The cost is the release history and the tag chain; the audience at the
-  time of the decision was zero stars, zero watchers, zero forks and an empty waitlist thread, which
-  is the cheapest this decision will ever be.
-- *Fixed in v0.3.2, and the fix above is what caused it:* **the repair for the machine-local gitignore
-  defect opened a third way to publish a private file.** Blanking `core.excludesFile` for `git add`
-  stopped a personal ignore from silently dropping files — but the preflight's clean-tree check still
-  honoured it, so the two disagreed about what was in the working tree. A path hidden from the operator
-  by their own global ignore was invisible to "working tree is not clean" and fully visible to
-  `git add .`, and would have gone out under a permanent tag. On the maintainer's machine that path is
-  `.claude/settings.local.json` — the global ignore hides it, this repo's `.gitignore` said nothing
-  about `.claude`, and `.claude/` already exists; it had not fired only because no such file had been
-  written yet. `status.showUntrackedFiles=no`, a common performance setting, defeated the same check a
-  second way. The preflight now reads the tree with the repository's own rules only and with `-uall`,
-  the repo classifies that file itself rather than leaving it to a personal one, and a never-ship
-  deny-list covers the general case that naming two journal files by hand never could. Three
-  consecutive rounds of review each found a fail-open in this one script, every time in the same shape:
-  a check printing "clean" over something it never looked at.
-- *Fixed in v0.3.2:* **the name sweep was silently matching nothing in five further ways**, each
-  printing "N name pattern(s) swept clean" while publishing the name: a pattern with trailing
-  whitespace (the filter trimmed the line it tested and passed the untrimmed one to `git grep`); a
-  pattern with a trailing inline comment — and `personal-patterns.txt`'s own instructions document
-  exactly that shape, so following the file's advice disabled the sweep; a pattern file saved as
-  cp1252, where an accented name decoded to a replacement character and became unmatchable; a name
-  inside a file git treats as binary, because `-I` skipped it and `.gitattributes` marks `*.png`
-  binary — a screenshot of this application being the single most likely place for a real name to be
-  sitting in plain sight; and a name appearing only in a **filename**, which `git grep` never searches.
-  The `-Title` text, spliced verbatim into a permanent public commit message, was the one
-  operator-supplied string that reached the remote unswept.
-- *Fixed in v0.3.2:* `git ls-remote`'s stderr was merged into its value, so an ordinary **exit-zero
-  warning** — GitHub's "redirecting to" for a renamed repo, ssh's "Permanently added … to the list of
-  known hosts" — became field 0 and was read as a commit SHA. With a local-only tag present that made
-  the script announce "already published with this exact tree — nothing to do" over a remote carrying
-  no tag at all. Also: a version string is now validated before anything moves (`-Version v1.0.0`
-  published a permanent tag named `vv1.0.0`; `-Version "0.3.2 beta"` pushed `main` irreversibly and
-  only then failed at `git tag`, leaving the public branch published with no tag naming it), a reused
-  local tag is checked to name the commit actually published, and a failed restore says so instead of
-  leaving the operator standing on `public` with the whole rebuilt tree staged.
-- *Fixed in v0.3.2, and the fix above is what caused it — the fourth round running:* **the checks
-  round three added could be defeated by one accented character.** `git ls-files` honours
-  `core.quotePath`, which defaults to true, so a path containing any byte ≥ 0x80 comes back
-  octal-escaped and wrapped in quotes. Both new list-based checks — the filename name-sweep and the
-  never-ship deny-list — matched their patterns against that mangled string instead of the real path.
-  A real name in a non-ASCII filename published itself under a permanent tag while the sweep reported
-  clean, and every `$`-anchored deny rule (`.key`, `.pem`, `.pfx`, `.local.json`) was defeated the same
-  way. PowerShell decoding git's UTF-8 output as the console's ANSI codepage was the same defect one
-  layer further out. Whether the sweep worked was therefore decided by two per-machine settings this
-  repository never states — the exact disease round three's own comment claimed to have cured.
-- *Fixed in v0.3.2:* round three's inline-comment stripper **silently rewrote valid patterns**. `#` is
-  a legal regex character, so `Surname|@handle #hashtag` became `Surname|@handle` — still a valid
-  expression, so nothing errored, nothing matched, and a real handle shipped. The parser no longer
-  guesses: a comment is a whole line, and anything else containing whitespace-then-`#` stops the
-  release rather than being interpreted. Round two had the mirror-image bug in the same place.
-- *Fixed in v0.3.2:* the filename sweep used **a different regex language** from the content sweep.
-  `\<Zoe\>` is a word boundary to git's ERE and an escaped literal `<` to .NET, so a pattern the
-  content sweep honoured the filename sweep silently ignored. Both now run through git's engine.
-- *Fixed in v0.3.2:* the remote tag's SHA was read, validated, and then **never compared to anything**.
-  A tag placed on the remote by someone else, over an entirely different tree, left the "same tree,
-  nothing to do" branch free to report the release as already live — telling the operator their tree
-  was published under that version when it was not, and the version was already spent.
-- *Known cost, stated rather than fixed:* the preflight reads the tree with this repository's ignore
-  rules only, so it names files the operator's own `git status` insists do not exist. Ordinary editor
-  and OS residue is now classified by `.gitignore` here rather than left to a personal global file,
-  and the abort message explains why it disagrees with `git status`. Separately, searching binary files
-  for names means a short pattern can match a random byte sequence inside a screenshot — measured at
-  roughly one in five for three-character patterns and never for four or more. The nine live patterns
-  are all five characters or longer; the abort message says when a hit is likely coincidental.
-- *Fixed in v0.3.2:* **four of the six published visuals were pictures of the application doing
-  nothing.** `hero-river.png` showed "Reading the shape of these years…" over an empty panel while
-  its caption described a warmth-and-tension river with statistics beneath it; `eras.png` showed
-  "Tracing the arc of these years…"; `ask.png` showed a spinner; `receipt.png` showed the "No reading
-  yet" empty state under a caption describing a claim opened to reveal the message underneath it.
-  They were genuine screenshots of the real application, which is exactly what made them feel safe to
-  ship. `capture-media.mjs` waited fixed millisecond delays instead of waiting for content, and
-  `episode.png` was correct only because it was the one capture with a content assertion. Every
-  capture now waits for the content its caption will claim and refuses rather than photographing an
-  empty panel — and with those guards in place all six re-captured correctly, so nothing was
-  withdrawn. `receipt.png` was a timing failure like the others, not missing data: `gen-demo.ts`
-  freezes a First Reflection into `examples/demo.db` citing two real receipts, and the old
-  `if (await claim.count())` silently skipped the click and photographed whatever was on screen
-  instead of failing.
+- *Open — the limit of the evidence contract, which is a property of the method rather than a defect
+  in it.* A receipt shows where an observation came from. It does not prove the observation is the
+  only reasonable interpretation. The contract stops the model quoting messages that were never sent
+  and asserting things it read nowhere; it cannot stop a true message being cherry-picked, sarcasm
+  being read flat, or a handful of examples standing in for years — and it cannot see the calls, the
+  RCS and iMessage threads, or anything said in person. Treat a reading as inspectable, not settled.
+  The *Archive health* report quantifies what is missing before any pattern is shown, and it no
+  longer waits to be opened: Home carries a quiet one-line escalation when the archive has holes in
+  it, and any reading whose span contains a gap says so in its own header — because prose closes a
+  gap that a chart at least leaves visibly empty. Each source in a mixed archive reports its own
+  span, so a stretch only one format covers is legible as exactly that.
+- *Open — a generic export that names nobody is scoped to its own file.* The generic importer
+  accepts a file carrying only when / which direction / what, with no sender column at all. Nothing
+  in such a file says who the conversation is with, so its identity is derived from the file's own
+  contents: re-importing the same export converges as usual, but a *second, different* export of the
+  same conversation lands as a second conversation. The alternative is worse and was the real
+  behaviour until this release — every such file resolved to the same two synthetic identities, so
+  two unrelated people's exports merged into one thread. Add a sender column and they converge.
+- *Open — "repeated rows collapsed at import" is an archive-wide number.* A row dropped as a
+  duplicate is dropped before it belongs to a thread, so it cannot honestly be attributed to one.
+  The archive-health panel reports the archive's total and says that is what it is.
 - *Open:* a professional trademark search for the mark (blocks any payment collection); the
   contributor-rights decision, CLA vs AGPL-only, which is disclosed in
   [CONTRIBUTING.md](../CONTRIBUTING.md) and currently means substantial external code cannot be merged;
   and external clinician validation of the experimental layer (Era 5 — external by design, see
   [SHIP.md](SHIP.md) §5).
-- *Closed as misdiagnosed, with numbers.* This entry previously said `GET /threads/:id/episodes` took
-  **roughly 20 seconds** on the 787-message demo, "queued behind the other Overview requests on Node's
-  single thread", and blamed `refreshEpisodes`/`refreshEras` recomputing per request. **None of that
-  is true, and the wrong diagnosis pointed the fix in the wrong direction.** `getEpisodes` is a single
-  indexed `SELECT` over a bounded table; it recomputes nothing, and never did. Measured against the
-  real demo database:
-
-  | read | 787 messages | 50,000 messages |
-  |---|---|---|
-  | episodes | 4–29 ms | **0 ms** (bounded row count) |
-  | trajectory | 12–22 ms | 117 ms |
-  | ambient | 19–29 ms | 374 ms |
-  | findings | 8–28 ms | 507 ms |
-  | *whole Overview, concurrent* | **~30 ms wall clock** | — |
-
-  The endpoints that cost anything at scale are the ones that compute over every message — findings,
-  ambient, trajectory — not episodes. Budgets are now asserted where the time actually goes
-  ([readBudget.test.ts](../server/test/readBudget.test.ts)): every Overview read under **500 ms** on
-  the demo, and under **2 s** on a generated 50,000-message archive, with a separate assertion that a
-  repeat call costs the same as the first — the "recomputing on read" failure the original entry
-  feared, now enforced rather than assumed. Ingest of that archive takes ~11 s and is deliberately
-  outside the budget: it happens once, at import, behind a progress bar.
-
-  What the 20 seconds probably was: a first navigation under the Vite **dev server**, which compiles
-  the view's module on demand. That is a development artifact, not something a user of a built app
-  ever meets — and it is exactly the kind of thing that gets recorded as a product defect when the
-  measurement is taken through `npm run demo:serve` and never checked against the API directly.
-- *Shipped in v0.4.0:* the browser-only **interactive demo** now exists, at
-  [/demo](https://between-mirror.github.io/between/demo/). It is the real React application — the same
-  code, the same views — booted through a separate entry that answers every `/api` read from JSON
-  captured off the real server (`npm run demo:export`, 31 surfaces) and refuses every write.
-
-  Two entry points and two Vite configs rather than one bundle with a runtime flag, so the installed
-  application cannot contain the code that serves frozen answers. Verified from a plain static server:
-  the page issues **six requests, all same-origin**, and nothing else — asserted in CI, and the built
-  bundle contains exactly two absolute URLs, both non-fetching (W3C namespace identifiers and React's
-  error-decoder link), each approved individually.
-
-  Ask offers **three questions** rather than a text box, because the demo holds answers to exactly
-  those: `sorry` (29 receipts), `miss you` (17), and `money`, which **honestly declines**. Each plan is
-  captured off the real `/ask/plan` route, not hand-written. Every receipt cited in a demo reading is
-  asserted to resolve to a message in the captured transcript.
-- *Closed, and it turned out to be the point:* the previous entry here said `examples/demo.db` holds no
-  pre-computed Ask answer, so Ask in the demo could only decline. Measured, the archive answers plenty
-  — the earlier attempt had sent whole sentences to a full-text search. The decline is kept anyway, as
-  one of the three offered questions, because a demo where every question succeeds misrepresents an
-  instrument whose central claim is that it stops when the words run out.
 
 ## Security model
 
@@ -357,8 +207,31 @@ protect against and the prompt-injection ceiling — are in [THREAT-MODEL.md](TH
 
 ## Supported inputs
 
-**Android SMS Backup & Restore XML only.** iPhone/iOS is not yet supported. SMS/MMS only — iMessage, RCS,
-voice, and in-person are not in the archive, so some conversations will look quieter than they were.
+*The list below is the claim, and a test reads it. Prose is easy to write and hard to check — this
+project has a postmortem about an honesty check that was parsing English and had quietly degraded to
+matching the word "never" — so what can be read is stated as a list a machine can compare against
+what the importer dispatch actually routes, in both directions.*
+
+<!-- claimed-inputs:begin -->
+- **Android SMS Backup & Restore XML**
+- **WhatsApp exported chats** (.txt or .zip, one-to-one)
+- **Generic CSV/JSON/JSONL** — anything shaped into when / who / direction / what
+<!-- claimed-inputs:end -->
+
+Import more than one and they merge rather than stack: the same conversation seen twice converges,
+and each source reports its own span in the archive-health report.
+
+**Not claimed, and built:** the **iMessage Mac `chat.db`** importer exists, is covered by a synthetic
+fixture suite, and is reachable only behind `--importers-beta`. A `chat.db` holds *every* conversation
+on the Mac, so it also needs `--conversation <id>` to say which one to read; it refuses to guess, and
+lists the conversations it found. It is **unverified on real archives** —
+every fixture behind it was written here, because the only real `chat.db` files in existence are
+somebody's own messages. It joins the list above when two volunteers have read real archives with it
+cleanly, and not before. If you have one: it opens the file read-only, writes nothing to it, and
+refuses to touch the live database under `~/Library/Messages`.
+
+**Not supported:** iPhone/iOS backups. For the Android path: SMS/MMS only — iMessage, RCS, voice, and
+in-person are not in the archive, so some conversations will look quieter than they were.
 
 ## Tests
 

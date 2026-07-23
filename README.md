@@ -7,7 +7,7 @@
 **Between Mirror turns years of messages into a private, explorable relationship history — with the words underneath every observation.**
 
 - 🔒 **Local-first, and enforced.** The server refuses to boot off loopback. Your archive stays on your computer. Deterministic views never send message text anywhere; optional written readings use only the model path you explicitly choose.
-- 🧾 **Receipts under every claim.** Every observation the model authors carries the messages it came from, or it doesn't get shown.
+- 🧾 **Receipts under every claim.** Every observation the model authors carries the messages it came from, or it doesn't get shown. A receipt shows where an observation came from; it does not prove the observation is the only reasonable interpretation. The point is that you can find where it's wrong.
 - ⚖️ **AGPL, no telemetry — checked by CI.** Inspectable by anyone, on Windows and Linux, on every push to `main` and every pull request.
 
 **Four ways in:**
@@ -21,7 +21,7 @@
 
 **Or just look:** [between-mirror.github.io/between](https://between-mirror.github.io/between/) — what it shows, what it refuses to claim, and what it does *not* protect you from.
 
-Today it reads **Android SMS Backup & Restore** exports. iPhone/iMessage is not supported yet — [docs/STATUS.md](docs/STATUS.md) is the authority on what is implemented, what is experimental, and what is only designed.
+Today it reads **Android SMS Backup & Restore** exports, **WhatsApp** exported chats (one-to-one), and a **generic CSV/JSON/JSONL** file for anything else you can shape into when / who / direction / what. iPhone/iMessage is not supported yet — [docs/STATUS.md](docs/STATUS.md) is the authority on what is implemented, what is experimental, and what is only designed.
 
 ---
 
@@ -85,6 +85,8 @@ You produce the input yourself, on the Android phone that has the conversation. 
 
 **iPhone / iMessage is not supported yet.** The parser has no path for an iPhone backup, and iMessage/RCS traffic isn't in an Android SMS archive at all (the tool flags the resulting gaps rather than guessing). If both people were on iPhone, the archive won't exist.
 
+**Other formats.** A **WhatsApp** export (the `.txt`, or the `.zip` around it) imports directly — one-to-one chats only; a group threads by a set of participants, which this schema cannot express, so it is refused rather than approximated. Anything else goes through the **generic importer**: CSV, JSON or JSONL with a timestamp, a sender, a direction and a body. Both refuse an ambiguous date rather than guessing the order, because guessing wrong shifts an archive by months while every date stays valid.
+
 ## Build from source
 
 Get [Node.js](https://nodejs.org) **22 or newer**, then, from the repo folder:
@@ -113,6 +115,7 @@ The counting views need no model and no network. The deep readings run through a
 
 - **Run it → [docs/DEPLOY.md](docs/DEPLOY.md).** Prerequisites, the phone export, ingest, browse, and the deep readings, end to end.
 - **What's real → [docs/STATUS.md](docs/STATUS.md).** Implemented, experimental, designed-not-built, and disabled. When the README and STATUS disagree, STATUS wins.
+- **Every defect ever found → [docs/POSTMORTEMS.md](docs/POSTMORTEMS.md).** The unabridged engineering record: what was wrong, what it meant for someone using it, what changed. Kept out of STATUS so STATUS stays answerable.
 - **What will never be built → [docs/ROADMAP.md](docs/ROADMAP.md).** The "not planned" list is permanent: no DRM, no accounts, no telemetry, no hosted service, no evidence-grade claims.
 - **Contributing → [CONTRIBUTING.md](CONTRIBUTING.md)** · **Support → [SUPPORT.md](SUPPORT.md)** · **Security → [SECURITY.md](SECURITY.md)** · **Conduct → [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** · **The name → [TRADEMARK.md](TRADEMARK.md)**
 

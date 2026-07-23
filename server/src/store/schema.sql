@@ -66,7 +66,10 @@ CREATE TABLE IF NOT EXISTS messages (
   raw_type          INTEGER,                              -- sms @type as-is
   raw_msg_box       INTEGER,                              -- mms @msg_box as-is
   source_file_id    INTEGER NOT NULL REFERENCES source_files(id),
-  dedup_key         TEXT NOT NULL UNIQUE                  -- GAMEPLAN §2.2; upsert-ignore on conflict
+  source_kind       TEXT NOT NULL                         -- denormalized from source_files.kind
+                    CHECK (source_kind IN ('android_smsbackup','whatsapp_txt','imessage_chatdb',
+                                           'imessage_backup','generic_jsonl','unknown')),
+  dedup_key         TEXT NOT NULL UNIQUE                  -- ingest/dedup.ts; upsert-ignore on conflict
 );
 CREATE INDEX IF NOT EXISTS idx_messages_thread_time ON messages(thread_id, sent_at_ms);
 CREATE INDEX IF NOT EXISTS idx_messages_time ON messages(sent_at_ms);
@@ -88,13 +91,23 @@ CREATE TABLE IF NOT EXISTS attachments (                                 -- META
   is_smil     INTEGER NOT NULL DEFAULT 0,
   blob_ref    TEXT                                         -- NULL unless user explicitly opted this item in
 );
+-- Archive health asks "how many attachments does this message have" for every message in a thread,
+-- and now does it on Home and on every reading rather than only inside the health tab. Without this
+-- index each of those questions scans the whole table, which on a multi-year archive is tens of
+-- seconds of a synchronous server answering nothing else.
+CREATE INDEX IF NOT EXISTS idx_attachments_message ON attachments(message_id);
 
 CREATE TABLE IF NOT EXISTS source_files (
   id             INTEGER PRIMARY KEY,
   path           TEXT NOT NULL,
   content_sha256 TEXT NOT NULL UNIQUE,                     -- re-import skip (T0.9)
   imported_at    TEXT NOT NULL,
-  record_count   INTEGER
+  record_count   INTEGER,
+  -- No DEFAULT on purpose: an import that cannot name its own format is a bug, and this column is
+  -- what the archive-health surface reports. 'unknown' is reachable only by migration.
+  kind           TEXT NOT NULL
+                 CHECK (kind IN ('android_smsbackup','whatsapp_txt','imessage_chatdb',
+                                 'imessage_backup','generic_jsonl','unknown'))
 );
 
 -- ── Full-text search ──────────────────────────────────────────────────────

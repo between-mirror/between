@@ -36,7 +36,7 @@ function buildGraph(n: number): ResolvedGraph {
   const messages: GraphMessage[] = [];
   for (let i = 0; i < n; i++) messages.push(msg(i % 2 === 0 ? 'outgoing' : 'incoming', BASE + i * 60_000, `Weekend plan note ${i}.`));
   return {
-    sourceFile: { path: 'syn.xml', contentSha256: 'f'.repeat(64), importedAt: new Date(BASE).toISOString(), recordCount: n },
+    sourceFile: { path: 'syn.xml', contentSha256: 'f'.repeat(64), importedAt: new Date(BASE).toISOString(), recordCount: n, kind: 'android_smsbackup' },
     contacts: [
       { tempId: OWNER, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },
       { tempId: THEM, displayName: 'Robin', primaryE164: '+15555550123', isOwner: false, relationshipType: 'friend' },

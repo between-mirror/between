@@ -21,6 +21,7 @@
   "/api/threads/1/trajectory": "threads_1_trajectory.json",
   "/api/threads/1/ambient": "threads_1_ambient.json",
   "/api/threads/1/episodes": "threads_1_episodes.json",
+  "/api/threads/1/archive-health": "threads_1_archive_health.json",
   "/api/episodes/1": "episodes_1.json",
   "/api/episodes/2": "episodes_2.json",
   "/api/episodes/3": "episodes_3.json",

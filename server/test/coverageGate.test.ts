@@ -27,7 +27,7 @@ function graph(n: number): ResolvedGraph {
     recipients: [{ contactTempId: i % 2 === 0 ? 2 : 1, role: 'to' as const }], attachments: [],
   }));
   return {
-    sourceFile: { path: 'syn.xml', contentSha256: 'c'.repeat(64), importedAt: new Date(BASE).toISOString(), recordCount: n },
+    sourceFile: { path: 'syn.xml', contentSha256: 'c'.repeat(64), importedAt: new Date(BASE).toISOString(), recordCount: n, kind: 'android_smsbackup' },
     contacts: [
       { tempId: 1, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },
       { tempId: 2, displayName: 'Robin', primaryE164: '+15555550123', isOwner: false, relationshipType: 'partner' },

@@ -15,6 +15,7 @@ import { Trajectory } from './Trajectory';
 import { Episodes } from './Episodes';
 import { Eras } from './Eras';
 import { ShapeOfIt } from './ShapeOfIt';
+import { ArchiveHealth } from './ArchiveHealth';
 import { Readings } from './Readings';
 import { Findings } from './Findings';
 import { Ask } from './Ask';
@@ -171,7 +172,7 @@ export function ThreadPanel({ thread, anchor, onClearAnchor, onBack, onOpenCalib
         id={`panel-${surface}`}
         aria-labelledby={surfaceViews.length > 1 ? `subtab-${view}` : `tab-${surface}`}
       >
-        {view === 'overview' ? <Overview thread={thread} onOpenReceipt={openReceipt} />
+        {view === 'overview' ? <Overview thread={thread} onOpenReceipt={openReceipt} onOpenHealth={() => setView('health')} />
           : view === 'trajectory' ? <Trajectory thread={thread} onOpenReceipt={openReceipt} />
           : view === 'episodes' ? <Episodes thread={thread} onOpenReceipt={openReceipt} />
           : view === 'eras' ? <Eras thread={thread} onOpenReceipt={openReceipt} />
@@ -179,6 +180,7 @@ export function ThreadPanel({ thread, anchor, onClearAnchor, onBack, onOpenCalib
           : view === 'readings' ? <Readings thread={thread} onOpenReceipt={openReceipt} onCalibrate={onOpenCalibration} />
           : view === 'ask' ? <Ask thread={thread} onOpenReceipt={openReceipt} />
           : view === 'shape' ? <ShapeOfIt thread={thread} onOpenReceipt={openReceipt} />
+          : view === 'health' ? <ArchiveHealth thread={thread} />
           : view === 'session' ? <Session thread={thread} onOpenReceipt={openReceipt} onCalibrate={onOpenCalibration} />
           : (
             <TranscriptReader

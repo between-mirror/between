@@ -30,7 +30,7 @@ export function seedThread(db: BetweenDB, msgs: SeedMsg[], thread = 1): number[]
   const t0 = msgs[0].ms, tn = msgs[msgs.length - 1].ms;
   const num = `+1555555${String(thread).padStart(4, '0')}`;
   const graph: ResolvedGraph = {
-    sourceFile: { path: `syn-${thread}.xml`, contentSha256: `${thread}`.padStart(64, 's'), importedAt: new Date(t0).toISOString(), recordCount: msgs.length },
+    sourceFile: { path: `syn-${thread}.xml`, contentSha256: `${thread}`.padStart(64, 's'), importedAt: new Date(t0).toISOString(), recordCount: msgs.length, kind: 'android_smsbackup' },
     contacts: [
       { tempId: OWNER, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },
       { tempId: THEM, displayName: 'Sam', primaryE164: num, isOwner: false, relationshipType: 'partner' },

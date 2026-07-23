@@ -71,7 +71,7 @@ function unscoredGraph(): ResolvedGraph {
     recipients: [{ contactTempId: dir === 'outgoing' ? T : O, role: 'to' as const }], attachments: [],
   });
   return {
-    sourceFile: { path: 'u.xml', contentSha256: 'u'.repeat(64), importedAt: new Date(base).toISOString(), recordCount: 3 },
+    sourceFile: { path: 'u.xml', contentSha256: 'u'.repeat(64), importedAt: new Date(base).toISOString(), recordCount: 3, kind: 'android_smsbackup' },
     contacts: [
       { tempId: O, displayName: 'Me', primaryE164: '+15555550100', isOwner: true, relationshipType: 'unknown' },
       { tempId: T, displayName: 'Sam', primaryE164: '+15555550123', isOwner: false, relationshipType: 'partner' },

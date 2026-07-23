@@ -37,6 +37,7 @@ personal-patterns.txt
 # repo would happily publish. .claude/settings.local.json records approved tool permissions and local
 # paths, and it appears the first time a permission is approved for this project.
 .claude/settings.local.json
+.agents/
 *.local.json
 
 # Editor and OS residue. Named here for the same reason: the release preflight reads the tree with
